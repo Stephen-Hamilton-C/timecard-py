@@ -201,7 +201,7 @@ def uninstallCommand():
 def getArgument() -> str:
 	if len(sys.argv) > 1:
 		return sys.argv[1].strip().upper()
-	return None
+	return ' '
 
 def printUsage():
 	print('Usage: timecard <INSTALL|UNINSTALL | STATUS | CLOCK|IN|OUT>')
@@ -211,8 +211,10 @@ def printUsage():
 
 
 # Check for this first so that we aren't prompting the user about clocking in if all they want to do is install
-if getArgument() == 'INSTALL':
+if getArgument() == 'INSTALL' or getArgument()[0] == 'I':
 	installCommand()
+elif getArgument() == 'UNINSTALL' or getArgument()[0] == 'U':
+	uninstallCommand()
 elif not os.path.exists(TIMECARD_FILE):
     # Timecard doesn't exist for today yet, prompt user
 	prompt = input('Clock in for the day? (Y/n): ').strip().lower()
@@ -236,16 +238,12 @@ else:
 	clockState = getClockState()
 	
 	# Try to get command from argument
-	action = getArgument() or ''
+	action = getArgument()
 		
-	if action == clockState or (len(action) > 0 and action[0] == clockState[0]) or action == 'CLOCK' or (len(action) > 0 and action[0] == 'C'):
+	if action == clockState or action[0] == clockState[0] or action == 'CLOCK' or action[0] == 'C':
 		clockCommand(clockState)
-	elif action == 'STATUS' or (len(action) > 0 and action[0] == 'S'):
+	elif action == 'STATUS' or action[0] == 'S':
 		statusCommand()
-	elif action == 'INSTALL' or (len(action) > 0 and action[0] == 'I'):
-		installCommand()
-	elif action == 'UNINSTALL' or (len(action) > 0 and action[0] == 'U'):
-		uninstallCommand()
 	else:
 		print('Unknown command.')
 		printUsage()
