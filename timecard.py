@@ -17,7 +17,7 @@ SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
 TIMECARD_PATH: str = os.path.expanduser('~/.local/share/timecard')
-INSTALL_DIR: str = os.path.expanduser('~/.local/usr/bin')
+INSTALL_DIR: str = os.path.expanduser('~/.local/bin')
 if system() == 'Windows':
 	TIMECARD_PATH = os.path.expanduser('~\\AppData\\Local\\timecard')
 	INSTALL_DIR = os.path.expanduser('~')
