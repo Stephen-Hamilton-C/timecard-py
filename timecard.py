@@ -1,22 +1,30 @@
 #!/bin/python3
 
 ###########################################################################################
-# Stephen-Hamilton-C
-# Freely available to anyone who wishes to use this :D
+# Stephen-Hamilton-C - Licensed under the GNU GPL v3 License.
+# Source code can be found at https://github.com/Stephen-Hamilton-C/Timecard
 # Place this script anywhere, and modify .bashrc so it runs this script with the auto arg.
 # e.g. `python ~/timecard/timecard.py auto`
 ###########################################################################################
 
-import sys, os, json, time
+import sys, os, stat, json, time
 from datetime import date, datetime
+from platform import system
+from shutil import move
 
 # Setup constants
-TIMECARD_FILE: str = './timecard.' + str(date.today()) + '.json'
+SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
-IS_INSTALLED = False # TODO: Determine if this script is already installed.
-CAN_INSTALL = not IS_INSTALLED and False # TODO: This may not be necessary if there's no sudo perms required for what I have in mind 
-# Ensure cwd is file dir
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
+TIMECARD_PATH: str = os.path.expanduser('~/.local/share/timecard')
+INSTALL_DIR: str = os.path.expanduser('~/.local/usr/bin')
+if system() == 'Windows':
+	TIMECARD_PATH = os.path.expanduser('~\\AppData\\Local\\timecard')
+	INSTALL_DIR = os.path.expanduser('~')
+
+# Ensure cwd is timecard dir
+os.makedirs(TIMECARD_PATH)
+os.chdir(TIMECARD_PATH)
 
 # Cleanup old timecards, if any
 for timeFile in os.listdir():
@@ -24,6 +32,7 @@ for timeFile in os.listdir():
 		print('Removing old timecard: '+timeFile)
 		os.remove(timeFile)
 
+isInstalled = os.path.exists(os.path.join(TIMECARD_PATH, 'timecard.py')) or os.path.exists(os.path.join(TIMECARD_PATH, 'timecard'))
 timeEntries: list = [ ]
 
 def readFile():
@@ -91,8 +100,10 @@ def remainingTimeCommand():
 	formattedRemaining = time.strftime(getFormatter(workRemaining), time.gmtime(workRemaining))
 	formattedLocalized = localized.strftime('%H:%M')
 
-	print(formattedRemaining + ' left:')
+	print('Time remaining to get ' + str(int(EXPECTED_WORK_HOURS/60/60)) + ' hours:')
+	print(formattedRemaining + ' left')
 	print(formattedLocalized)
+	print()
 
     
 def clockCommand():
@@ -117,18 +128,10 @@ def hoursWorkedCommand():
 	formattedTime = time.strftime(getFormatter(timeSum), totalTime)
 
 	# Report to the user the results
-	print('Started work at '+datetime.fromtimestamp(timeEntries[0]['startTime']).strftime('%H:%M'))
-	# TODO: Print off entire log of entries for the day
-	print()
 	print('Total time worked:')
 	print(formattedTime)
 	print(str(nearestQuarterHour) + ' hours')
 	print()
-	print('Time remaining to get ' + str(int(EXPECTED_WORK_HOURS/60/60)) + ' hours:')
-	remainingTimeCommand()
-	print()
-	print('Total time on break:')
-	totalBreakTimeCommand()
 
 def totalBreakTimeCommand():
 	# FIXME: Test this some more... after clocking in, it's 10 minutes off
@@ -137,27 +140,71 @@ def totalBreakTimeCommand():
 
 	formattedTime = time.strftime(getFormatter(timeSum), totalTime)
 
+	print('Total time on break:')
 	print(formattedTime)
+	print()
 
+def statusCommand():
+	# TODO: Print off entire log of entries for the day
+	print('Started work at '+datetime.fromtimestamp(timeEntries[0]['startTime']).strftime('%H:%M'))
+	print()
+	hoursWorkedCommand()
+	remainingTimeCommand()
+	totalBreakTimeCommand()
 
 def installCommand():
-	if CAN_INSTALL:
-		print('Automatic installing is not yet supported. Sorry!')
-		# TODO: Implement installing script into system
+	if isInstalled:
+		print('timecard.py is already installed!')
 	else:
-		print('Unable to install at this time. Is timecard.py already installed?')
+		os.makedirs(INSTALL_DIR)
+
+		if system() == 'Windows':
+			move(SCRIPT_PATH, os.path.join(INSTALL_DIR, 'timecard.py'))
+			print('Installed to ' + INSTALL_DIR + '. Use `python timecard.py` to run the script')
+		else:
+			exePath = os.path.join(INSTALL_DIR, 'timecard')
+			move(SCRIPT_PATH, exePath)
+			with open(os.path.expanduser('~/.bashrc'), 'a') as bashrcFile:
+				bashrcFile.write('# Timecard autorun')
+				bashrcFile.write('python ' + exePath)
+				bashrcFile.write()
+			try:
+				os.chmod(exePath, stat.S_IRWXU)
+			finally:
+				print('Installed to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
+
 
 def uninstallCommand():
-	print('Automatic installing is not yet supported, so there\'s no way I can uninstall this!')
-	# TODO: Implement uninstalling once installing is implemented
+	if isInstalled:
+		os.remove(SCRIPT_PATH)
+		if system() == 'Windows':
+			for timeFile in os.listdir():
+				if timeFile.startswith('timecard.') and timeFile.endswith('.json'):
+					os.remove(timeFile)
+		else:
+			bashrcLines = []
+			with open(os.path.expanduser('~/.bashrc'), 'r') as bashrcFile:
+				bashrcLines = bashrcFile.readlines()
+			with open(os.path.expanduser('~/.bashrc'), 'w') as bashrcFile:
+				for line in bashrcLines:
+					line = line.strip()
+					if line != '# Timecard autorun' or (line.startswith('python ') and line.endswith('/timecard')):
+						bashrcFile.write(line)
+		os.rmdir(os.path.dirname(SCRIPT_PATH))
+	else:
+		print('timecard.py is not installed!')
 
 def getArgument() -> str:
 	if len(sys.argv) > 1:
 		return sys.argv[1].strip().upper()
 	return None
 
+def printUsage():
+	print('Usage: timecard <INSTALL|UNINSTALL | STATUS | CLOCK|IN|OUT>')
+
+# Check for this first so that we aren't prompting the user about clocking in if all they want to do is install
 if getArgument() == 'INSTALL':
-	print('Install script')
+	installCommand()
 elif not os.path.exists(TIMECARD_FILE):
     # Timecard doesn't exist for today yet, prompt user
 	prompt = input('Clock in for the day? (Y/n): ').strip().lower()
@@ -183,28 +230,15 @@ else:
 	
 	# Try to get command from argument
 	action = getArgument()
-	if action == None:
-		# Argument doesn't exist, get command from user
-		# TODO: Remove WORKED, REMAINING, and BREAK to replace with STATUS or something. Report all data at once.
-		# TODO: Remove input and only take input via command. Show usage if arg is not recognized
-		commands = clockState + '|WORKED|REMAINING|BREAK'
-		if CAN_INSTALL:
-			commands += '|INSTALL'
-		if IS_INSTALLED:
-			commands += '|UNINSTALL'
-		action = input('Possible commands: (' + commands + '): ').strip().upper()
 		
-	if action == clockState or (len(action) > 0 and action[0] == clockState[0]):
+	if action == clockState or (len(action) > 0 and action[0] == clockState[0]) or action == 'CLOCK' or (len(action) > 0 and action[0] == 'C'):
 		clockCommand()
-	elif action == 'WORKED' or (len(action) > 0 and action[0] == 'W'):
-		hoursWorkedCommand()
-	elif action == 'BREAK' or (len(action) > 0 and action[0] == 'B'):
-		totalBreakTimeCommand()
-	elif action == 'REMAINING' or (len(action) > 0 and action[0] == 'R'):
-		remainingTimeCommand()
+	elif action == 'STATUS' or (len(action) > 0 and action[0] == 'S'):
+		statusCommand()
 	elif action == 'INSTALL' or (len(action) > 0 and action[0] == 'I'):
 		installCommand()
 	elif action == 'UNINSTALL' or (len(action) > 0 and action[0] == 'U'):
 		uninstallCommand()
 	else:
 		print('Unknown command.')
+		printUsage()
