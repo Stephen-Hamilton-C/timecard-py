@@ -190,7 +190,7 @@ def uninstallCommand():
 				for line in bashrcLines:
 					line = line.strip()
 					if line != '# Timecard autorun' or (line.startswith('python3 ') and line.endswith(' auto')):
-						bashrcFile.write(line)
+						bashrcFile.write(line + '\n')
 		os.remove(SCRIPT_PATH)
 	else:
 		print('timecard.py is not installed!')
