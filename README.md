@@ -6,6 +6,7 @@ A simple timecard command line python script. Written by a developer, for develo
 ### Automatic Install
 1. Ensure `~/.local/usr/bin` is in your PATH.
     - Run this command if it isn't: `echo "export PATH=$PATH:~/.local/usr/bin" >> ~/.bashrc`
+    - **Windows users:** skip this step and just run `python3 timecard.py` in your user folder after install.
 2. Run `python3 timecard.py install` .
 
 ### Manual Install - Linux
