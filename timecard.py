@@ -135,6 +135,7 @@ def hoursWorkedCommand():
 
 def totalBreakTimeCommand():
 	# FIXME: Test this some more... after clocking in, it's 10 minutes off
+	# Before clocking back in, the break time is accurate. After clocking in, it's off by several minutes.
 	timeSum: int = getTotalBreakTime()
 	totalTime = time.gmtime(timeSum)
 
