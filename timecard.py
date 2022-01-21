@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 
 ###########################################################################################
 # Stephen-Hamilton-C - Licensed under the GNU GPL v3 License.
@@ -107,8 +107,7 @@ def remainingTimeCommand():
 	print()
 
     
-def clockCommand():
-	clockState = getClockState()
+def clockCommand(clockState):
 	print('Clocking ' + clockState.lower() + '...')
 	if clockState == 'IN':
 		clockIn()
@@ -162,7 +161,7 @@ def installCommand():
 
 		if system() == 'Windows':
 			move(SCRIPT_PATH, os.path.join(INSTALL_DIR, 'timecard.py'))
-			print('Installed to ' + INSTALL_DIR + '. Use `python timecard.py` to run the script')
+			print('Installed to ' + INSTALL_DIR + '. Use `python3 timecard.py` to run the script')
 		else:
 			exePath = os.path.join(INSTALL_DIR, 'timecard')
 			move(SCRIPT_PATH, exePath)
@@ -178,18 +177,22 @@ def installCommand():
 
 def uninstallCommand():
 	if isInstalled:
-		if system() == 'Windows':
-			for timeFile in os.listdir():
-				if timeFile.startswith('timecard.') and timeFile.endswith('.json'):
-					os.remove(timeFile)
-		else:
+		for timeFile in os.listdir():
+			if timeFile.startswith('timecard.') and timeFile.endswith('.json'):
+				os.remove(timeFile)
+		if system() != 'Windows':
+			os.chdir('..')
+			os.rmdir('timecard')
+
 			bashrcLines = []
 			with open(os.path.expanduser('~/.bashrc'), 'r') as bashrcFile:
 				bashrcLines = bashrcFile.readlines()
 			with open(os.path.expanduser('~/.bashrc'), 'w') as bashrcFile:
 				for line in bashrcLines:
-					if line.strip() != '# Timecard autorun' or (line.strip().startswith('python3 ') and line.strip().endswith(' auto')):
+					strippedLine = line.strip()
+					if strippedLine != '# Timecard autorun' and not (strippedLine.startswith('python3') and strippedLine.endswith('auto')):
 						bashrcFile.write(line)
+		print('timecard.py has been uninstalled!')
 		os.remove(SCRIPT_PATH)
 	else:
 		print('timecard.py is not installed!')
@@ -220,12 +223,11 @@ elif not os.path.exists(TIMECARD_FILE):
 	# Default answer is YES
 	# Also make sure the user hasn't done this in another instance
 	if prompt != 'n' and not os.path.exists(TIMECARD_FILE):
-		clockIn()
-		saveFile()
+		clockCommand('IN')
 		
 elif getArgument() == 'AUTO':
     # Script was run automatically by .bashrc (if configured that way) and timecard already exists
-	print('Timecard already present for today. If you need to clock ' + getClockState().lower() + ', run `python '+__file__+'`')
+	print('Timecard already present for today. If you need to clock ' + getClockState().lower() + ', run `python3 '+__file__+'`')
 else:
 	readFile()
   
@@ -236,7 +238,7 @@ else:
 	action = getArgument() or ''
 		
 	if action == clockState or (len(action) > 0 and action[0] == clockState[0]) or action == 'CLOCK' or (len(action) > 0 and action[0] == 'C'):
-		clockCommand()
+		clockCommand(clockState)
 	elif action == 'STATUS' or (len(action) > 0 and action[0] == 'S'):
 		statusCommand()
 	elif action == 'INSTALL' or (len(action) > 0 and action[0] == 'I'):
