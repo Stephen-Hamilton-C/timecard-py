@@ -4,7 +4,7 @@
 # Stephen-Hamilton-C - Licensed under the GNU GPL v3 License.
 # Source code can be found at https://github.com/Stephen-Hamilton-C/Timecard
 # Place this script anywhere, and modify .bashrc so it runs this script with the auto arg.
-# e.g. `python ~/timecard/timecard.py auto`
+# e.g. `python3 ~/timecard/timecard.py auto`
 ###########################################################################################
 
 import sys, os, stat, json, time
@@ -23,7 +23,8 @@ if system() == 'Windows':
 	INSTALL_DIR = os.path.expanduser('~')
 
 # Ensure cwd is timecard dir
-os.makedirs(TIMECARD_PATH)
+if not os.path.exists(TIMECARD_PATH):
+	os.makedirs(TIMECARD_PATH)
 os.chdir(TIMECARD_PATH)
 
 # Cleanup old timecards, if any
@@ -32,7 +33,7 @@ for timeFile in os.listdir():
 		print('Removing old timecard: '+timeFile)
 		os.remove(timeFile)
 
-isInstalled = os.path.exists(os.path.join(TIMECARD_PATH, 'timecard.py')) or os.path.exists(os.path.join(TIMECARD_PATH, 'timecard'))
+isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard'))
 timeEntries: list = [ ]
 
 def readFile():
@@ -156,7 +157,8 @@ def installCommand():
 	if isInstalled:
 		print('timecard.py is already installed!')
 	else:
-		os.makedirs(INSTALL_DIR)
+		if not os.path.exists(INSTALL_DIR):
+			os.makedirs(INSTALL_DIR)
 
 		if system() == 'Windows':
 			move(SCRIPT_PATH, os.path.join(INSTALL_DIR, 'timecard.py'))
@@ -165,9 +167,9 @@ def installCommand():
 			exePath = os.path.join(INSTALL_DIR, 'timecard')
 			move(SCRIPT_PATH, exePath)
 			with open(os.path.expanduser('~/.bashrc'), 'a') as bashrcFile:
-				bashrcFile.write('# Timecard autorun')
-				bashrcFile.write('python ' + exePath)
-				bashrcFile.write()
+				bashrcFile.write('\n# Timecard autorun\n')
+				bashrcFile.write('python3 ' + exePath + ' auto\n')
+				bashrcFile.write('\n')
 			try:
 				os.chmod(exePath, stat.S_IRWXU)
 			finally:
@@ -176,7 +178,6 @@ def installCommand():
 
 def uninstallCommand():
 	if isInstalled:
-		os.remove(SCRIPT_PATH)
 		if system() == 'Windows':
 			for timeFile in os.listdir():
 				if timeFile.startswith('timecard.') and timeFile.endswith('.json'):
@@ -188,9 +189,9 @@ def uninstallCommand():
 			with open(os.path.expanduser('~/.bashrc'), 'w') as bashrcFile:
 				for line in bashrcLines:
 					line = line.strip()
-					if line != '# Timecard autorun' or (line.startswith('python ') and line.endswith('/timecard')):
+					if line != '# Timecard autorun' or (line.startswith('python3 ') and line.endswith(' auto')):
 						bashrcFile.write(line)
-		os.rmdir(os.path.dirname(SCRIPT_PATH))
+		os.remove(SCRIPT_PATH)
 	else:
 		print('timecard.py is not installed!')
 
@@ -201,6 +202,10 @@ def getArgument() -> str:
 
 def printUsage():
 	print('Usage: timecard <INSTALL|UNINSTALL | STATUS | CLOCK|IN|OUT>')
+
+
+
+
 
 # Check for this first so that we aren't prompting the user about clocking in if all they want to do is install
 if getArgument() == 'INSTALL':
@@ -229,7 +234,7 @@ else:
 	clockState = getClockState()
 	
 	# Try to get command from argument
-	action = getArgument()
+	action = getArgument() or ''
 		
 	if action == clockState or (len(action) > 0 and action[0] == clockState[0]) or action == 'CLOCK' or (len(action) > 0 and action[0] == 'C'):
 		clockCommand()
