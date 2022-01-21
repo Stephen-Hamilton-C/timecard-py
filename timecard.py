@@ -173,6 +173,7 @@ def installCommand():
 			try:
 				os.chmod(exePath, stat.S_IRWXU)
 			finally:
+				# TODO: Add prompt to see if user wants to add .local/bin to their path
 				print('Installed to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
 
 
@@ -193,6 +194,7 @@ def uninstallCommand():
 					strippedLine = line.strip()
 					if strippedLine != '# Timecard autorun' and not (strippedLine.startswith('python3') and strippedLine.endswith('auto')):
 						bashrcFile.write(line)
+			# TODO: Add prompt to see if user wants to remove .local/bin from their PATH
 		print('timecard.py has been uninstalled!')
 		os.remove(SCRIPT_PATH)
 	else:
