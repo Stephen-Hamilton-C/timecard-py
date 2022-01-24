@@ -242,7 +242,7 @@ else:
 	# Try to get command from argument
 	action = getArgument()
 		
-	# TODO: Make a way to subtract time from clock in or out
+	# TODO: Make a way to subtract time from clock in or out (clock in or clock out earlier than NOW)
 	if action == clockState or action[0] == clockState[0] or action == 'CLOCK' or action[0] == 'C':
 		clockCommand(clockState)
 	elif action == ' ':
