@@ -153,6 +153,12 @@ def statusCommand():
 	remainingTimeCommand()
 	totalBreakTimeCommand()
 
+def aliasPrompt(bashrcPath, exePath):
+	aliasPrompt = input('Do you want to add alias timecard="python3 '+exePath+'" to your .bashrc to get around this? (Y/n): ').strip().upper()
+	if aliasPrompt != 'n':
+		with open(bashrcPath, 'a') as bashrcFile:
+			bashrcFile.write('alias timecard="python3 '+exePath+'" #timecard\n')
+
 def installCommand():
 	if isInstalled:
 		print('timecard.py is already installed!')
@@ -164,17 +170,29 @@ def installCommand():
 			move(SCRIPT_PATH, os.path.join(INSTALL_DIR, 'timecard.py'))
 			print('Installed to ' + INSTALL_DIR + '. Use `python3 timecard.py` to run the script')
 		else:
+			bashrcPath = os.path.expanduser('~/.bashrc')
 			exePath = os.path.join(INSTALL_DIR, 'timecard')
 			move(SCRIPT_PATH, exePath)
-			with open(os.path.expanduser('~/.bashrc'), 'a') as bashrcFile:
+			with open(bashrcPath, 'a') as bashrcFile:
 				bashrcFile.write('\n# Timecard autorun\n')
-				bashrcFile.write('python3 ' + exePath + ' auto\n')
-				bashrcFile.write('\n')
+				bashrcFile.write('python3 ' + exePath + ' auto #timecard\n')
 			try:
 				os.chmod(exePath, stat.S_IRWXU)
-			finally:
-				# TODO: Add prompt to see if user wants to add .local/bin to their path
-				print('Installed to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
+				PATH = os.getenv('PATH')
+				if PATH.find('.local/bin') == -1:
+					pathPrompt = input('Do you want to add ~/.local/bin to your PATH? This will allow you to run timecard like a command. (Y/n): ').strip().upper()
+					if pathPrompt != 'n':
+						with open(bashrcPath, 'a') as bashrcFile:
+							bashrcFile.write('PATH=$PATH:~/.local/bin #timecard\n')
+					else:
+						aliasPrompt(bashrcPath, exePath)
+			except Exception:
+				print('Unable to make timecard.py executable! You\'ll have to use `python3 timecard.py` to run Timecard.')
+				aliasPrompt(bashrcPath, exePath)
+			# TODO: Add prompt to see if user wants to add .local/bin to their path
+			with open(bashrcPath, 'a') as bashrcFile:
+				bashrcFile.write('\n')
+			print('Installed to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
 
 
 def uninstallCommand():
@@ -192,7 +210,7 @@ def uninstallCommand():
 			with open(os.path.expanduser('~/.bashrc'), 'w') as bashrcFile:
 				for line in bashrcLines:
 					strippedLine = line.strip()
-					if strippedLine != '# Timecard autorun' and not (strippedLine.startswith('python3') and strippedLine.endswith('auto')):
+					if strippedLine != '# Timecard autorun' and not strippedLine.endswith('#timecard'):
 						bashrcFile.write(line)
 			# TODO: Add prompt to see if user wants to remove .local/bin from their PATH
 		print('timecard.py has been uninstalled!')
