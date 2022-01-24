@@ -206,7 +206,7 @@ def getArgument() -> str:
 	return ' '
 
 def printUsage():
-	print('Usage: timecard <INSTALL|UNINSTALL | STATUS | CLOCK|IN|OUT>')
+	print('Usage: timecard <INSTALL|UNINSTALL | CLOCK|IN|OUT>')
 
 
 
@@ -244,8 +244,10 @@ else:
 		
 	if action == clockState or action[0] == clockState[0] or action == 'CLOCK' or action[0] == 'C':
 		clockCommand(clockState)
-	elif action == 'STATUS' or action[0] == 'S':
+	elif action == ' ':
+		# Ran with no arguments
 		statusCommand()
 	else:
-		print('Unknown command.')
+		if action[0] != '?':
+			print('Unknown command.')
 		printUsage()
