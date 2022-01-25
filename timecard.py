@@ -122,6 +122,7 @@ def hoursWorkedCommand():
 
 	# Calculate the nearest quarter hour to input into a timesheet database
 	totalTime = time.gmtime(timeSum)
+	# FIXME: This seems to be wrong while working. Timecard's reporting 6 hours, 58 minutes, but only 6.0 hours.
 	nearestQuarterHour = totalTime.tm_hour + ((round(totalTime.tm_min/15) * 15) % 60) / 60
 
 	# Format the time
