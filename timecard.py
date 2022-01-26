@@ -108,7 +108,7 @@ def remainingTimeCommand():
 
     
 def clockCommand(clockState):
-	print('Clocking ' + clockState.lower() + '...')
+	print('Clocked ' + clockState.lower() + ' at '+time.strftime('%H:%M', time.gmtime(time.time())))
 	if clockState == 'IN':
 		clockIn()
 		remainingTimeCommand()
