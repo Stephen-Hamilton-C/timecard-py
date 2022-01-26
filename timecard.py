@@ -80,7 +80,7 @@ def getTotalBreakTime() -> int:
 		if timeEntry['endTime'] == 0:
 			continue
 		if i+1 < len(timeEntries):
-			timeSum += timeEntries[i+1]['endTime'] - timeEntry['startTime']
+			timeSum += timeEntries[i+1]['startTime'] - timeEntry['endTime']
 		else:
 			timeSum += round(time.time()) - timeEntry['endTime']
 	return timeSum
@@ -122,9 +122,7 @@ def hoursWorkedCommand():
 
 	# Calculate the nearest quarter hour to input into a timesheet database
 	totalTime = time.gmtime(timeSum)
-	# FIXME: This seems to be wrong while working. Timecard's reporting 6 hours, 58 minutes, but only 6.0 hours.
-	# Seems I need to add 1 to the hour if it's rounding up to the next hour. 7 hours, 50 minutes correctly reports 7.75 hours.
-	nearestQuarterHour = totalTime.tm_hour + ((round(totalTime.tm_min/15) * 15) % 60) / 60
+	nearestQuarterHour = totalTime.tm_hour + (round(totalTime.tm_min/15) * 15) / 60
 
 	# Format the time
 	formattedTime = time.strftime(getFormatter(timeSum), totalTime)
@@ -136,8 +134,7 @@ def hoursWorkedCommand():
 	print()
 
 def totalBreakTimeCommand():
-	# FIXME: Test this some more... after clocking in, it's 10 minutes off
-	# Before clocking back in, the break time is accurate. After clocking in, it's off by several minutes.
+	# TODO: Test math fix
 	timeSum: int = getTotalBreakTime()
 	totalTime = time.gmtime(timeSum)
 
@@ -148,8 +145,18 @@ def totalBreakTimeCommand():
 	print()
 
 def statusCommand():
-	# TODO: Print off entire log of entries for the day
-	print('Started work at '+datetime.fromtimestamp(timeEntries[0]['startTime']).strftime('%H:%M'))
+	for i in range(len(timeEntries)):
+		timeEntry = timeEntries[i]
+		formattedStartTime = datetime.fromtimestamp(timeEntry['startTime']).strftime('%H:%M')
+		formattedEndTime = datetime.fromtimestamp(timeEntry['endTime']).strftime('%H:%M')
+		if i == 0:
+			print('Started work at '+formattedStartTime)
+		else:
+			print('Clocked in: '+formattedStartTime)
+		if(timeEntry['endTime'] != 0):
+			print('Clocked out: '+formattedEndTime)
+		else:
+			print('Time since clocked in: '+datetime.fromtimestamp(time.time() - timeEntry['startTime']).strftime('%H:%M'))
 	print()
 	hoursWorkedCommand()
 	remainingTimeCommand()
@@ -173,28 +180,35 @@ def installCommand():
 			print('Installed to ' + INSTALL_DIR + '. Use `python3 timecard.py` to run the script')
 		else:
 			bashrcPath = os.path.expanduser('~/.bashrc')
+			bashrcFile = open(bashrcPath, 'a')
 			exePath = os.path.join(INSTALL_DIR, 'timecard')
+
+			# Move timecard.py to install dir
 			move(SCRIPT_PATH, exePath)
-			with open(bashrcPath, 'a') as bashrcFile:
-				bashrcFile.write('\n# Timecard autorun\n')
-				bashrcFile.write('python3 ' + exePath + ' auto #timecard\n')
+
+			# Append to bashrc
+			bashrcFile.write('\n# Timecard autorun\n')
+			bashrcFile.write('python3 ' + exePath + ' auto #timecard\n')
 			try:
+				# Set timecard.py to rwx by user
 				os.chmod(exePath, stat.S_IRWXU)
+
+				# Set PATH to include .local/bin, if not already
 				PATH = os.getenv('PATH')
 				if PATH.find('.local/bin') == -1:
 					pathPrompt = input('Do you want to add ~/.local/bin to your PATH? This will allow you to run timecard like a command. (Y/n): ').strip().upper()
 					if pathPrompt != 'n':
-						with open(bashrcPath, 'a') as bashrcFile:
-							bashrcFile.write('PATH=$PATH:~/.local/bin #timecard\n')
+						bashrcFile.write('PATH=$PATH:~/.local/bin #timecard\n')
 					else:
+						# If user doesn't want to set path, we can try an alias
 						aliasPrompt(bashrcPath, exePath)
 			except Exception:
+				# Probably couldn't set timecard.py to be rwx. We could use an alias tho
 				print('Unable to make timecard.py executable! You\'ll have to use `python3 timecard.py` to run Timecard.')
 				aliasPrompt(bashrcPath, exePath)
-			# TODO: Add prompt to see if user wants to add .local/bin to their path
-			with open(bashrcPath, 'a') as bashrcFile:
-				bashrcFile.write('\n')
+			bashrcFile.write('\n')
 			print('Installed to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
+			bashrcFile.close()
 
 
 def uninstallCommand():
@@ -214,7 +228,6 @@ def uninstallCommand():
 					strippedLine = line.strip()
 					if strippedLine != '# Timecard autorun' and not strippedLine.endswith('#timecard'):
 						bashrcFile.write(line)
-			# TODO: Add prompt to see if user wants to remove .local/bin from their PATH
 		print('timecard.py has been uninstalled!')
 		os.remove(SCRIPT_PATH)
 	else:
@@ -233,9 +246,9 @@ def printUsage():
 
 
 # Check for this first so that we aren't prompting the user about clocking in if all they want to do is install
-if getArgument() == 'INSTALL' or getArgument()[0] == 'I':
+if getArgument() == 'INSTALL':
 	installCommand()
-elif getArgument() == 'UNINSTALL' or getArgument()[0] == 'U':
+elif getArgument() == 'UNINSTALL':
 	uninstallCommand()
 elif not os.path.exists(TIMECARD_FILE):
     # Timecard doesn't exist for today yet, prompt user
@@ -269,6 +282,6 @@ else:
 		# Ran with no arguments
 		statusCommand()
 	else:
-		if action[0] != '?':
+		if action[0] != '?' or action != 'HELP':
 			print('Unknown command.')
 		printUsage()
