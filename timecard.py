@@ -137,7 +137,6 @@ def hoursWorkedCommand():
 	print()
 
 def totalBreakTimeCommand():
-	# TODO: Test math fix
 	timeSum: int = getTotalBreakTime()
 	totalTime = time.gmtime(timeSum)
 
