@@ -12,7 +12,10 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
+from importlib_metadata import version
+
 # Setup constants
+VERSION: str = 'dev-build'
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -238,6 +241,9 @@ def getArgument() -> str:
 		return sys.argv[1].strip().upper()
 	return ' '
 
+def printVersion():
+	print('timecard.py version ' + VERSION)
+
 def printUsage():
 	print('Usage: timecard <INSTALL|UNINSTALL | CLOCK|IN|OUT>')
 
@@ -278,6 +284,8 @@ else:
 	# TODO: Make a way to subtract time from clock in or out (clock in or clock out earlier than NOW)
 	if action == clockState or action[0] == clockState[0] or action == 'CLOCK' or action[0] == 'C':
 		clockCommand(clockState)
+	elif action == 'VERSION' or action[0] == 'V':
+		printVersion()
 	elif action == ' ':
 		# Ran with no arguments
 		statusCommand()
