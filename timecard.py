@@ -115,6 +115,8 @@ def clockCommand(clockState):
 	if clockState == 'IN':
 		clockIn()
 		remainingTimeCommand()
+		if len(timeEntries) > 0:
+			totalBreakTimeCommand()
 	elif clockState == 'OUT':
 		clockOut()
 		hoursWorkedCommand()
