@@ -55,14 +55,14 @@ def clockIn():
     timeEntries.append(newEntry)
     
 def clockOut():
-    lastEntry: dict[str, int] = timeEntries[len(timeEntries) - 1]
+    lastEntry: dict[str, int] = timeEntries[-1]
     lastEntry['endTime'] = round(time.time())
     
 def getClockState() -> str:
     # Clock state needs data to be loaded	
 	if len(timeEntries) == 0:
 		readFile()
-	if timeEntries[len(timeEntries) - 1]['endTime'] == 0:
+	if timeEntries[-1]['endTime'] == 0:
 		return 'OUT'
 	return 'IN'
 
