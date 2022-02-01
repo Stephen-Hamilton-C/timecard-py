@@ -111,15 +111,21 @@ def remainingTimeCommand():
 
     
 def clockCommand(clockState):
-	print('Clocked ' + clockState.lower() + ' at '+time.strftime('%H:%M', time.gmtime(time.time())))
 	if clockState == 'IN':
+		if len(timeEntries) > 0 and timeEntries[-1]['endTime'] == 0:
+			print('Already clocked in! It seems another instance of timecard.py was running...')
+			return
 		clockIn()
 		remainingTimeCommand()
 		if len(timeEntries) > 0:
 			totalBreakTimeCommand()
 	elif clockState == 'OUT':
+		if timeEntries[-1]['endTime'] != 0:
+			print('Already clocked out! It seems another instance of timecard.py was running...')
+			return
 		clockOut()
 		hoursWorkedCommand()
+	print('Clocked ' + clockState.lower() + ' at '+time.strftime('%H:%M', time.gmtime(time.time())))
 	saveFile()
  
 def hoursWorkedCommand():
