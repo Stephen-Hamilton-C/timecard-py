@@ -50,13 +50,13 @@ def saveFile():
 		timeEntriesJson: str = json.dumps(timeEntries)
 		timecardFile.write(timeEntriesJson)
   
-def clockIn():
-    newEntry: dict[str, int] = { "startTime": round(time.time()), "endTime": 0 }
+def clockIn(clockedTime):
+    newEntry: dict[str, int] = { "startTime": round(clockedTime), "endTime": 0 }
     timeEntries.append(newEntry)
     
-def clockOut():
+def clockOut(clockedTime):
     lastEntry: dict[str, int] = timeEntries[-1]
-    lastEntry['endTime'] = round(time.time())
+    lastEntry['endTime'] = round(clockedTime)
     
 def getClockState() -> str:
     # Clock state needs data to be loaded	
@@ -112,11 +112,20 @@ def remainingTimeCommand():
     
 def clockCommand():
 	clockState = getClockState()
+	# TODO: Test that offset clocking in/out works
+	clockTime = time.time()
+	if getArgument(2) != ' ':
+		try:
+			offset = int(getArgument(2))
+			clockTime -= offset*60
+		except ValueError:
+			print('Offset could not be parsed as a number! Use `timecard help` to see usage of this command.')
+			return
 	if clockState == 'IN':
 		if len(timeEntries) > 0 and timeEntries[-1]['endTime'] == 0:
 			print('Already clocked in! It seems another instance of timecard.py was running...')
 			return
-		clockIn()
+		clockIn(clockTime)
 		remainingTimeCommand()
 		if len(timeEntries) > 0:
 			totalBreakTimeCommand()
@@ -124,9 +133,9 @@ def clockCommand():
 		if timeEntries[-1]['endTime'] != 0:
 			print('Already clocked out! It seems another instance of timecard.py was running...')
 			return
-		clockOut()
+		clockOut(clockTime)
 		hoursWorkedCommand()
-	print('Clocked ' + clockState.lower() + ' at '+time.strftime('%H:%M', time.gmtime(time.time())))
+	print('Clocked ' + clockState.lower() + ' at '+time.strftime('%H:%M', time.gmtime(clockTime)))
 	saveFile()
  
 def hoursWorkedCommand():
@@ -244,9 +253,9 @@ def uninstallCommand():
 	else:
 		print('timecard.py is not installed!')
 
-def getArgument() -> str:
-	if len(sys.argv) > 1:
-		return sys.argv[1].strip().upper()
+def getArgument(argIndex = 1) -> str:
+	if len(sys.argv) > argIndex:
+		return sys.argv[argIndex].strip().upper()
 	return ' '
 
 def printVersion():
@@ -257,9 +266,9 @@ def printUsage():
 	print('	<no command> - Shows time log, how many hours worked, how much time you have left to meet your desired hours worked ('+str(EXPECTED_WORK_HOURS / 60 / 60)+' hours), and how many hours you\'ve been on break.')
 	print('	Install - Installs timecard.py to the user folder, adds an autorun to .bashrc, and adds ~/.local/bin to PATH if necessary.')
 	print('	Uninstall - Removes timecard.py from system.')
-	print('	IN (I) - Clocks in if you aren\'t already.')
-	print('	OUT (O) - Clocks out if you aren\'t already.')
-	print('	CLOCK (C) - Toggles your clocked in/out state. Effectively the same as `timecard in` or `timecard out`')
+	print('	IN (I) [offset] - Clocks in if you aren\'t already. If an offset is supplied, it logs you as clocked in OFFSET minutes ago.')
+	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago.')
+	print('	CLOCK (C) [offset] - Automatically determines whether to clock in/out. See IN and OUT commands.')
 	print('	Version (V) - Prints the current version of timecard.py.')
 	print('	Help | ? - Prints this help message.')
 	print()
@@ -296,7 +305,6 @@ else:
 	# Try to get command from argument
 	action = getArgument()
 		
-	# TODO: Make a way to subtract time from clock in or out (clock in or clock out earlier than NOW)
 	if isCommandOrAlias(action, 'CLOCK'):
 		clockCommand()
 	elif isCommandOrAlias(action, 'IN'):
