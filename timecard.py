@@ -110,7 +110,8 @@ def remainingTimeCommand():
 	print()
 
     
-def clockCommand(clockState):
+def clockCommand():
+	clockState = getClockState()
 	if clockState == 'IN':
 		if len(timeEntries) > 0 and timeEntries[-1]['endTime'] == 0:
 			print('Already clocked in! It seems another instance of timecard.py was running...')
@@ -263,6 +264,8 @@ def printUsage():
 	print('	Help | ? - Prints this help message.')
 	print()
 
+def isCommandOrAlias(action, cmd):
+	return action == cmd or action[0] == cmd[0]
 
 
 
@@ -282,7 +285,7 @@ elif not os.path.exists(TIMECARD_FILE):
 	# Default answer is YES
 	# Also make sure the user hasn't done this in another instance
 	if prompt != 'n' and not os.path.exists(TIMECARD_FILE):
-		clockCommand('IN')
+		clockCommand()
 		
 elif getArgument() == 'AUTO':
     # Script was run automatically by .bashrc (if configured that way) and timecard already exists
@@ -290,16 +293,23 @@ elif getArgument() == 'AUTO':
 else:
 	readFile()
   
-	# Determine if we are clocking in or out
-	clockState = getClockState()
-	
 	# Try to get command from argument
 	action = getArgument()
 		
 	# TODO: Make a way to subtract time from clock in or out (clock in or clock out earlier than NOW)
-	if action == clockState or action[0] == clockState[0] or action == 'CLOCK' or action[0] == 'C':
-		clockCommand(clockState)
-	elif action == 'VERSION' or action[0] == 'V':
+	if isCommandOrAlias(action, 'CLOCK'):
+		clockCommand()
+	elif isCommandOrAlias(action, 'IN'):
+		if getClockState() == 'OUT':
+			print('You\'re already clocked in! Use `timecard out` to clock out first.')
+		else:
+			clockCommand()
+	elif isCommandOrAlias(action, 'OUT'):
+		if getClockState() == 'IN':
+			print('You\'re already clocked out! Use `timecard in` to clock in first.')
+		else:
+			clockCommand()
+	elif isCommandOrAlias(action, 'VERSION'):
 		printVersion()
 	elif action == ' ':
 		# Ran with no arguments
