@@ -252,8 +252,16 @@ def printVersion():
 	print('timecard.py version ' + VERSION)
 
 def printUsage():
-	print('Usage: timecard <INSTALL|UNINSTALL | CLOCK|IN|OUT>')
-
+	print('\ntimecard.py commands:')
+	print('	<no command> - Shows time log, how many hours worked, how much time you have left to meet your desired hours worked ('+str(EXPECTED_WORK_HOURS / 60 / 60)+' hours), and how many hours you\'ve been on break.')
+	print('	Install - Installs timecard.py to the user folder, adds an autorun to .bashrc, and adds ~/.local/bin to PATH if necessary.')
+	print('	Uninstall - Removes timecard.py from system.')
+	print('	IN (I) - Clocks in if you aren\'t already.')
+	print('	OUT (O) - Clocks out if you aren\'t already.')
+	print('	CLOCK (C) - Toggles your clocked in/out state. Effectively the same as `timecard in` or `timecard out`')
+	print('	Version (V) - Prints the current version of timecard.py.')
+	print('	Help | ? - Prints this help message.')
+	print()
 
 
 
@@ -297,6 +305,6 @@ else:
 		# Ran with no arguments
 		statusCommand()
 	else:
-		if action[0] != '?' or action != 'HELP':
+		if action[0] != '?' and action != 'HELP':
 			print('Unknown command.')
 		printUsage()
