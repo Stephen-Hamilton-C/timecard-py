@@ -61,7 +61,10 @@ def clockOut(clockedTime):
 def getClockState() -> str:
     # Clock state needs data to be loaded	
 	if len(timeEntries) == 0:
-		readFile()
+		try:
+			readFile()
+		except FileNotFoundError:
+			return 'IN'
 	if timeEntries[-1]['endTime'] == 0:
 		return 'OUT'
 	return 'IN'
