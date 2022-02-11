@@ -138,7 +138,7 @@ def clockCommand():
 			return
 		clockOut(clockTime)
 		hoursWorkedCommand()
-	print('Clocked ' + clockState.lower() + ' at '+time.strftime('%H:%M', time.gmtime(clockTime)))
+	print('Clocked ' + clockState.lower() + ' at ' + datetime.fromtimestamp(clockTime).strftime('%H:%M'))
 	saveFile()
  
 def hoursWorkedCommand():
