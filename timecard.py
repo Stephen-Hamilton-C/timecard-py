@@ -17,7 +17,11 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
-from importlib_metadata import version
+try:
+	import requests
+	print(requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/dev/test.txt').text + '\n')
+except ImportError:
+	print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
 
 # Setup constants
 VERSION: str = 'dev-build'
