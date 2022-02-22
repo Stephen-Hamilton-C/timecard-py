@@ -7,6 +7,11 @@
 # e.g. `python3 ~/timecard/timecard.py auto`
 ###########################################################################################
 
+# TODO: For release:
+#	- Do this for exact times and not just offset minutes
+# TODO: Post-release:
+# 	- Make an i3 status command
+
 import sys, os, stat, json, time
 from datetime import date, datetime
 from platform import system
