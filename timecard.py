@@ -63,7 +63,7 @@ def getVersionFromStr(versionStr):
 	versionMajor = int(version[0])
 	versionMinor = int(version[1])
 	versionPatch = int(version[2])
-	return { "major": versionMajor, "minor": versionMinor, "patch": versionPatch, "number": versionMajor + versionMinor + versionPatch }
+	return { "major": versionMajor, "minor": versionMinor, "patch": versionPatch, "number": versionMajor*100 + versionMinor*10 + versionPatch }
 
 def readFile():
 	global timeEntries
