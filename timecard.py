@@ -9,6 +9,7 @@
 
 # TODO: For release:
 #	- Do this for exact times and not just offset minutes
+#   - Update checking
 # TODO: Post-release:
 # 	- Make an i3 status command
 
@@ -17,14 +18,8 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
-try:
-	import requests
-	print(requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/dev/test.txt').text + '\n')
-except ImportError:
-	print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
-
 # Setup constants
-VERSION: str = 'dev-build'
+VERSION: str = '0.1.0'
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -47,6 +42,28 @@ for timeFile in os.listdir():
 
 isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard'))
 timeEntries: list = [ ]
+
+# Check for updates
+try:
+	import requests
+	try:
+		versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/dev/version.txt')
+		versionRequest.raise_for_status()
+		latestVersion = getVersionFromStr(versionRequest.text)
+		currentVersion = getVersionFromStr(VERSION)
+		if latestVersion.number > currentVersion.number:
+			print('An update is available for timecard.py!')
+	except requests.exceptions.RequestException:
+		print('Unable to get latest version string! Are you online?')
+except ImportError:
+	print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
+
+def getVersionFromStr(versionStr):
+	version = versionStr.split('.')
+	versionMajor = int(version[0])
+	versionMinor = int(version[1])
+	versionPatch = int(version[2])
+	return { "major": versionMajor, "minor": versionMinor, "patch": versionPatch, "number": versionMajor + versionMinor + versionPatch }
 
 def readFile():
 	global timeEntries
