@@ -18,8 +18,16 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
+class Version:
+	def __init__(self, versionStr) -> None:
+		version = versionStr.split('.')
+		self.major = int(version[0])
+		self.minor = int(version[1])
+		self.patch = int(version[2])
+		self.number = self.major*100 + self.minor*10 + self.patch
+
 # Setup constants
-VERSION: str = '0.0.0'
+VERSION: Version = Version('0.0.0')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -43,22 +51,15 @@ for timeFile in os.listdir():
 isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard'))
 timeEntries: list = [ ]
 
-def getVersionFromStr(versionStr):
-	version = versionStr.split('.')
-	versionMajor = int(version[0])
-	versionMinor = int(version[1])
-	versionPatch = int(version[2])
-	return { "major": versionMajor, "minor": versionMinor, "patch": versionPatch, "number": versionMajor*100 + versionMinor*10 + versionPatch }
-
 # Check for updates
 try:
 	import requests
 	try:
 		versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/main/version.txt')
 		versionRequest.raise_for_status()
-		latestVersion = getVersionFromStr(versionRequest.text)
-		currentVersion = getVersionFromStr(VERSION)
-		if latestVersion['number'] > currentVersion['number']:
+		latestVersion = Version(versionRequest.text)
+		currentVersion = Version(VERSION)
+		if latestVersion.number > currentVersion.number:
 			print('An update is available for timecard.py!')
 	except requests.exceptions.RequestException:
 		print('Unable to get latest version string! Are you online?')
