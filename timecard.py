@@ -19,7 +19,7 @@ from platform import system
 from shutil import move
 
 # Setup constants
-VERSION: str = '0.1.0'
+VERSION: str = '0.0.0'
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -43,27 +43,27 @@ for timeFile in os.listdir():
 isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard'))
 timeEntries: list = [ ]
 
-# Check for updates
-try:
-	import requests
-	try:
-		versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/dev/version.txt')
-		versionRequest.raise_for_status()
-		latestVersion = getVersionFromStr(versionRequest.text)
-		currentVersion = getVersionFromStr(VERSION)
-		if latestVersion.number > currentVersion.number:
-			print('An update is available for timecard.py!')
-	except requests.exceptions.RequestException:
-		print('Unable to get latest version string! Are you online?')
-except ImportError:
-	print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
-
 def getVersionFromStr(versionStr):
 	version = versionStr.split('.')
 	versionMajor = int(version[0])
 	versionMinor = int(version[1])
 	versionPatch = int(version[2])
 	return { "major": versionMajor, "minor": versionMinor, "patch": versionPatch, "number": versionMajor*100 + versionMinor*10 + versionPatch }
+
+# Check for updates
+try:
+	import requests
+	try:
+		versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/main/version.txt')
+		versionRequest.raise_for_status()
+		latestVersion = getVersionFromStr(versionRequest.text)
+		currentVersion = getVersionFromStr(VERSION)
+		if latestVersion['number'] > currentVersion['number']:
+			print('An update is available for timecard.py!')
+	except requests.exceptions.RequestException:
+		print('Unable to get latest version string! Are you online?')
+except ImportError:
+	print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
 
 def readFile():
 	global timeEntries
@@ -289,6 +289,8 @@ def getArgument(argIndex = 1) -> str:
 
 def printVersion():
 	print('timecard.py version ' + VERSION)
+	if latestVersion != None and latestVersion['number'] > currentVersion['number']:
+		print('An update is available! New version: ' + versionRequest.text)
 
 def printUsage():
 	print('\ntimecard.py commands:')
