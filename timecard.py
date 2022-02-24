@@ -8,7 +8,6 @@
 ###########################################################################################
 
 # TODO: For release:
-#   - Test offset with exact time
 #   - Test i3 status
 
 import sys, os, stat, json, time
@@ -133,38 +132,43 @@ def clockCommand():
 			try:
 				# Try parsing as 24-hour time 
 				offsetTime = datetime.strptime(getArgument(2), '%H:%M')
-				offsetDate = datetime.now().replace(hour=offsetTime.hour, minute=offsetTime.minute)
+				offsetDate = datetime.now().replace(hour=offsetTime.hour, minute=offsetTime.minute, second=0)
 				offsetTimestamp = offsetDate.timestamp()
 
-				# Sanity checks
+				# Sanity check
 				if offsetTimestamp > clockTime:
 					print('Offset cannot be after current time! Use `timecard help` to see usage of this command.')
-					return
-				if clockState == 'IN' and offsetTimestamp < timeEntries[-1]['endTime']:
-					print('Offset cannot be before last clock out time! Use `timecard help` to see usage of this command.')
-					return
-				elif clockState == 'OUT' and offsetTimestamp < timeEntries[-1]['startTime']:
-					print('Offset cannot be before last clock in time! Use `timecard help` to see usage of this command.')
 					return
 
 				offset = clockTime - offsetTimestamp
 				clockTime -= offset
-
 			except ValueError:
 				print('Offset could not be parsed! Use `timecard help` to see usage of this command.')
 				return
 	if clockState == 'IN':
+		# Sanity check
+		if clockTime < timeEntries[-1]['endTime']:
+			print('Offset cannot be before last clock out time! Use `timecard help` to see usage of this command.')
+			return
+		# Check that we aren't already clocked in
 		if len(timeEntries) > 0 and timeEntries[-1]['endTime'] == 0:
 			print('Already clocked in! It seems another instance of timecard.py was running...')
 			return
+
 		clockIn(clockTime)
 		remainingTimeCommand()
 		if len(timeEntries) > 0:
 			totalBreakTimeCommand()
 	elif clockState == 'OUT':
+		# Sanity check
+		if clockTime < timeEntries[-1]['startTime']:
+			print('Offset cannot be before last clock in time! Use `timecard help` to see usage of this command.')
+			return
+		# Check that we aren't already clocked out
 		if timeEntries[-1]['endTime'] != 0:
 			print('Already clocked out! It seems another instance of timecard.py was running...')
 			return
+
 		clockOut(clockTime)
 		hoursWorkedCommand()
 	print('Clocked ' + clockState.lower() + ' at ' + datetime.fromtimestamp(clockTime).strftime('%H:%M'))
