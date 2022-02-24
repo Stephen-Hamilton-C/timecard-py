@@ -8,10 +8,8 @@
 ###########################################################################################
 
 # TODO: For release:
-#	- Do this for exact times and not just offset minutes
-#   - Update checking
-# TODO: Post-release:
-# 	- Make an i3 status command
+#   - Test offset with exact time
+#   - Test i3 status
 
 import sys, os, stat, json, time
 from datetime import date, datetime
@@ -26,12 +24,16 @@ class Version:
 		self.patch = int(version[2])
 		self.number = self.major*100 + self.minor*10 + self.patch
 
+	def __str__(self) -> str:
+		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
+
 # Setup constants
 VERSION: Version = Version('0.0.0')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
 TIMECARD_PATH: str = os.path.expanduser('~/.local/share/timecard')
+# TIMECARD_PATH: str = os.path.dirname(SCRIPT_PATH)
 INSTALL_DIR: str = os.path.expanduser('~/.local/bin')
 if system() == 'Windows':
 	TIMECARD_PATH = os.path.expanduser('~\\AppData\\Local\\timecard')
@@ -42,29 +44,8 @@ if not os.path.exists(TIMECARD_PATH):
 	os.makedirs(TIMECARD_PATH)
 os.chdir(TIMECARD_PATH)
 
-# Cleanup old timecards, if any
-for timeFile in os.listdir():
-	if os.path.isfile(timeFile) and timeFile.startswith('timecard.') and timeFile.endswith('.json') and os.stat(timeFile).st_mtime < time.time() - 7*60*60*24:
-		print('Removing old timecard: '+timeFile)
-		os.remove(timeFile)
-
 isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard'))
 timeEntries: list = [ ]
-
-# Check for updates
-try:
-	import requests
-	try:
-		versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/main/version.txt')
-		versionRequest.raise_for_status()
-		latestVersion = Version(versionRequest.text)
-		currentVersion = Version(VERSION)
-		if latestVersion.number > currentVersion.number:
-			print('An update is available for timecard.py!')
-	except requests.exceptions.RequestException:
-		print('Unable to get latest version string! Are you online?')
-except ImportError:
-	print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
 
 def readFile():
 	global timeEntries
@@ -142,15 +123,36 @@ def remainingTimeCommand():
     
 def clockCommand():
 	clockState = getClockState()
-	# TODO: Test that offset clocking in/out works
 	clockTime = time.time()
 	if getArgument(2) != ' ':
 		try:
+			# Try parsing as just minutes
 			offset = int(getArgument(2))
 			clockTime -= offset*60
 		except ValueError:
-			print('Offset could not be parsed as a number! Use `timecard help` to see usage of this command.')
-			return
+			try:
+				# Try parsing as 24-hour time 
+				offsetTime = datetime.strptime(getArgument(2), '%H:%M')
+				offsetDate = datetime.now().replace(hour=offsetTime.hour, minute=offsetTime.minute)
+				offsetTimestamp = offsetDate.timestamp()
+
+				# Sanity checks
+				if offsetTimestamp > clockTime:
+					print('Offset cannot be after current time! Use `timecard help` to see usage of this command.')
+					return
+				if clockState == 'IN' and offsetTimestamp < timeEntries[-1]['endTime']:
+					print('Offset cannot be before last clock out time! Use `timecard help` to see usage of this command.')
+					return
+				elif clockState == 'OUT' and offsetTimestamp < timeEntries[-1]['startTime']:
+					print('Offset cannot be before last clock in time! Use `timecard help` to see usage of this command.')
+					return
+
+				offset = clockTime - offsetTimestamp
+				clockTime -= offset
+
+			except ValueError:
+				print('Offset could not be parsed! Use `timecard help` to see usage of this command.')
+				return
 	if clockState == 'IN':
 		if len(timeEntries) > 0 and timeEntries[-1]['endTime'] == 0:
 			print('Already clocked in! It seems another instance of timecard.py was running...')
@@ -168,12 +170,15 @@ def clockCommand():
 	print('Clocked ' + clockState.lower() + ' at ' + datetime.fromtimestamp(clockTime).strftime('%H:%M'))
 	saveFile()
  
+def getNearestQuarterHour(totalTime):
+	return totalTime.tm_hour + (round(totalTime.tm_min/15) * 15) / 60
+
 def hoursWorkedCommand():
 	timeSum: int = getTotalTimeWorked()
 
 	# Calculate the nearest quarter hour to input into a timesheet database
 	totalTime = time.gmtime(timeSum)
-	nearestQuarterHour = totalTime.tm_hour + (round(totalTime.tm_min/15) * 15) / 60
+	nearestQuarterHour = getNearestQuarterHour(totalTime)
 
 	# Format the time
 	formattedTime = time.strftime(getFormatter(timeSum), totalTime)
@@ -289,8 +294,8 @@ def getArgument(argIndex = 1) -> str:
 	return ' '
 
 def printVersion():
-	print('timecard.py version ' + VERSION)
-	if latestVersion != None and latestVersion['number'] > currentVersion['number']:
+	print('timecard.py version ' + str(VERSION))
+	if latestVersion != None and latestVersion.number > currentVersion.number:
 		print('An update is available! New version: ' + versionRequest.text)
 
 def printUsage():
@@ -298,15 +303,38 @@ def printUsage():
 	print('	<no command> - Shows time log, how many hours worked, how much time you have left to meet your desired hours worked ('+str(EXPECTED_WORK_HOURS / 60 / 60)+' hours), and how many hours you\'ve been on break.')
 	print('	Install - Installs timecard.py to the user folder, adds an autorun to .bashrc, and adds ~/.local/bin to PATH if necessary.')
 	print('	Uninstall - Removes timecard.py from system.')
-	print('	IN (I) [offset] - Clocks in if you aren\'t already. If an offset is supplied, it logs you as clocked in OFFSET minutes ago.')
-	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago.')
+	print('	IN (I) [offset] - Clocks in if you aren\'t already. If an offset is supplied, it logs you as clocked in OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
+	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	CLOCK (C) [offset] - Automatically determines whether to clock in/out. See IN and OUT commands.')
 	print('	Version (V) - Prints the current version of timecard.py.')
 	print('	Help | ? - Prints this help message.')
 	print()
 
 def isCommandOrAlias(action, cmd):
-	return action == cmd or action[0] == cmd[0]
+	return action == cmd or (len(action) == 1 and action[0] == cmd[0])
+
+if getArgument() != 'I3STATUS':
+	# Check for updates
+	latestVersion = None
+	try:
+		import requests
+		try:
+			versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/main/version.txt')
+			versionRequest.raise_for_status()
+			latestVersion = Version(versionRequest.text)
+			currentVersion = Version(VERSION)
+			if latestVersion.number > currentVersion.number:
+				print('An update is available for timecard.py!')
+		except requests.exceptions.RequestException:
+			print('Unable to get latest version string! Are you online?')
+	except ImportError:
+		print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
+
+	# Cleanup old timecards, if any
+	for timeFile in os.listdir():
+		if os.path.isfile(timeFile) and timeFile.startswith('timecard.') and timeFile.endswith('.json') and os.stat(timeFile).st_mtime < time.time() - 7*60*60*24:
+			print('Removing old timecard: '+timeFile)
+			os.remove(timeFile)
 
 
 
@@ -315,6 +343,14 @@ if getArgument() == 'INSTALL':
 	installCommand()
 elif getArgument() == 'UNINSTALL':
 	uninstallCommand()
+elif getArgument() == 'I3STATUS':
+	if not os.path.exists(TIMECARD_FILE):
+		print('(OUT)')
+	else:
+		currentState = ' (IN)'
+		if getClockState() == 'IN':
+			currentState = ' (OUT)'
+		print(str(getNearestQuarterHour(time.gmtime(getTotalTimeWorked()))) + currentState)
 elif not os.path.exists(TIMECARD_FILE):
     # Timecard doesn't exist for today yet, prompt user
 	prompt = input('Clock in for the day? (Y/n): ').strip().lower()
