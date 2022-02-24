@@ -7,9 +7,6 @@
 # e.g. `python3 ~/timecard/timecard.py auto`
 ###########################################################################################
 
-# TODO: For release:
-#   - Test i3 status
-
 import sys, os, stat, json, time
 from datetime import date, datetime
 from platform import system
@@ -27,7 +24,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION: Version = Version('0.0.0')
+VERSION: Version = Version('1.0.0')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
