@@ -233,7 +233,7 @@ def installCommand():
 
 		if system() == 'Windows':
 			move(SCRIPT_PATH, os.path.join(INSTALL_DIR, 'timecard.py'))
-			print('Installed to ' + INSTALL_DIR + '. Use `python3 timecard.py` to run the script')
+			print('Installed timecard v'+str(VERSION)+' to ' + INSTALL_DIR + '. Use `python3 timecard.py` to run the script')
 		else:
 			bashrcPath = os.path.expanduser('~/.bashrc')
 			bashrcFile = open(bashrcPath, 'a')
@@ -263,7 +263,7 @@ def installCommand():
 				print('Unable to make timecard.py executable! You\'ll have to use `python3 timecard.py` to run Timecard.')
 				aliasPrompt(bashrcPath, exePath)
 			bashrcFile.write('\n')
-			print('Installed to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
+			print('Installed timecard v'+str(VERSION)+' to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
 			bashrcFile.close()
 
 
@@ -284,7 +284,7 @@ def uninstallCommand():
 					strippedLine = line.strip()
 					if strippedLine != '# Timecard autorun' and not strippedLine.endswith('#timecard'):
 						bashrcFile.write(line)
-		print('timecard.py has been uninstalled!')
+		print('timecard.py v'+str(VERSION)+' has been uninstalled!')
 		os.remove(SCRIPT_PATH)
 	else:
 		print('timecard.py is not installed!')
