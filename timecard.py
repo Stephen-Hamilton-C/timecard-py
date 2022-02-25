@@ -9,7 +9,6 @@
 
 # TODO: Before release:
 #	- Test undo
-#	- Test i3status
 
 import sys, os, stat, json, time
 from datetime import date, datetime
@@ -213,10 +212,13 @@ def statusCommand():
 			print('Started work at '+formattedStartTime)
 		else:
 			print('Clocked in: '+formattedStartTime)
+
 		if(timeEntry['endTime'] != 0):
 			print('Clocked out: '+formattedEndTime)
 		else:
-			print('Time since clocked in: '+datetime.fromtimestamp(time.time() - timeEntry['startTime']).strftime('%H:%M'))
+			timeSum = time.time() - timeEntry['startTime']
+			totalTime = time.gmtime(timeSum)
+			print('Time since last clocked in: '+time.strftime(getFormatter(timeSum), totalTime))
 	print()
 	hoursWorkedCommand()
 	remainingTimeCommand()
