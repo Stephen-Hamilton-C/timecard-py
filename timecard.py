@@ -7,6 +7,10 @@
 # e.g. `python3 ~/timecard/timecard.py auto`
 ###########################################################################################
 
+# TODO: Before release:
+#	- Test undo
+#	- Test i3status
+
 import sys, os, stat, json, time
 from datetime import date, datetime
 from platform import system
@@ -289,6 +293,17 @@ def uninstallCommand():
 	else:
 		print('timecard.py is not installed!')
 
+def undoCommand():
+	clockState = getClockState()
+	if clockState == 'IN':
+		timeEntries[-1]['endTime'] = 0
+		print('Undo clock out. Currently clocked in.')
+	elif clockState == 'OUT':
+		timeEntries.pop(-1)
+		print('Undo clock in. Currently clocked out.')
+
+	saveFile()
+
 def getArgument(argIndex = 1) -> str:
 	if len(sys.argv) > argIndex:
 		return sys.argv[argIndex].strip().upper()
@@ -307,6 +322,7 @@ def printUsage():
 	print('	IN (I) [offset] - Clocks in if you aren\'t already. If an offset is supplied, it logs you as clocked in OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	CLOCK (C) [offset] - Automatically determines whether to clock in/out. See IN and OUT commands.')
+	print('	UNDO (U) - Undos the last clock in/out action')
 	print('	Version (V) - Prints the current version of timecard.py.')
 	print('	Help | ? - Prints this help message.')
 	print()
@@ -348,10 +364,13 @@ elif getArgument() == 'I3STATUS':
 	if not os.path.exists(TIMECARD_FILE):
 		print('(OUT)')
 	else:
-		currentState = ' (IN)'
 		if getClockState() == 'IN':
-			currentState = ' (OUT)'
-		print(str(getNearestQuarterHour(time.gmtime(getTotalTimeWorked()))) + currentState)
+			breakTime: int = getTotalBreakTime()
+			totalTime = time.gmtime(breakTime)
+			formattedTime = time.strftime(getFormatter(breakTime), totalTime)
+			print('OUT: ' + formattedTime)
+		else:
+			print('IN: ' + str(getNearestQuarterHour(time.gmtime(getTotalTimeWorked()))))
 elif not os.path.exists(TIMECARD_FILE):
     # Timecard doesn't exist for today yet, prompt user
 	prompt = input('Clock in for the day? (Y/n): ').strip().lower()
@@ -386,6 +405,8 @@ else:
 			print('You\'re already clocked out! Use `timecard in` to clock in first.')
 		else:
 			clockCommand()
+	elif isCommandOrAlias(action, 'UNDO'):
+		undoCommand()
 	elif isCommandOrAlias(action, 'VERSION'):
 		printVersion()
 	elif action == ' ':
