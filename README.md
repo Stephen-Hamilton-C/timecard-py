@@ -9,6 +9,7 @@ A simple timecard command line python script. Written by a developer, for develo
 - [Uninstalling](#uninstalling)
   - [Automatic Uninstall](#automatic-uninstall)
   - [Manual Uninstall - Linux](#manual-uninstall---linux)
+- [Command Usage](#command-usage)
 - [Data Files](#data-files)
 - [License](#license)
 
@@ -41,6 +42,10 @@ A simple timecard command line python script. Written by a developer, for develo
 1. Delete the `timecard.py` file and any symlinks you may have made.
 2. Run `rm -rfv ~/.local/share/timecard/`.
 3. Edit your .bashrc (`nano ~/.bashrc`) and find and remove the line under the `# Timecard autorun` comment.
+
+# Command Usage
+
+TODO: Write this
 
 # Data Files
 Timecard.py creates timecard.json files to keep track of your clocked time. In Linux, these can be found in `~/.local/share/timecard/`. In Windows, they're in `%LocalAppData%\timecard\`.
