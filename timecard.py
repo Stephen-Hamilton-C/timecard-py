@@ -7,9 +7,6 @@
 # e.g. `python3 ~/timecard/timecard.py auto`
 ###########################################################################################
 
-# TODO: Before release:
-#	- Test undo
-
 import sys, os, stat, json, time
 from datetime import date, datetime
 from platform import system
@@ -304,7 +301,10 @@ def undoCommand():
 		timeEntries.pop(-1)
 		print('Undo clock in. Currently clocked out.')
 
-	saveFile()
+	if len(timeEntries) > 0:
+		saveFile()
+	elif os.path.exists(TIMECARD_FILE):
+		os.remove(TIMECARD_FILE)
 
 def getArgument(argIndex = 1) -> str:
 	if len(sys.argv) > argIndex:
@@ -364,7 +364,7 @@ elif getArgument() == 'UNINSTALL':
 	uninstallCommand()
 elif getArgument() == 'I3STATUS':
 	if not os.path.exists(TIMECARD_FILE):
-		print('(OUT)')
+		print('OUT')
 	else:
 		if getClockState() == 'IN':
 			breakTime: int = getTotalBreakTime()
