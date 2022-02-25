@@ -343,7 +343,7 @@ if getArgument() != 'I3STATUS':
 			if latestVersion.number > currentVersion.number:
 				print('An update is available for timecard.py!')
 		except requests.exceptions.RequestException:
-			print('Unable to get latest version string! Are you online?')
+			pass
 	except ImportError:
 		print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
 
