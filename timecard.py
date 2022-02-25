@@ -144,7 +144,7 @@ def clockCommand():
 				return
 	if clockState == 'IN':
 		# Sanity check
-		if clockTime < timeEntries[-1]['endTime']:
+		if len(timeEntries) > 0 and clockTime < timeEntries[-1]['endTime']:
 			print('Offset cannot be before last clock out time! Use `timecard help` to see usage of this command.')
 			return
 		# Check that we aren't already clocked in
