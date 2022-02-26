@@ -6,6 +6,7 @@ A simple timecard command line python script. Written by a developer, for develo
 - [Features](#features)
 - [Command Usage](#command-usage)
 - [Installing](#installing)
+  - [Requirements](#requirements)
   - [Automatic Install](#automatic-install)
   - [Manual Install - Linux](#manual-install---linux)
 - [Uninstalling](#uninstalling)
@@ -16,25 +17,49 @@ A simple timecard command line python script. Written by a developer, for develo
 
 # Features
 
-TODO: Finish this
-- Locks up terminal until you have clocked in for first time today (only if installed)
+- Clock in and out at any time of the day.
+- Reports how many hours you've been working.
+- Coveniently gives hours worked rounded to nearest quarter.
+- Reports how long you've been on break.
+- Estimates when you'll be done with work, presuming an 8 hour work day and no breaks.
+- Locks up terminal until you have clocked in for the first time that day (only if installed).
+- Automatic cleanup. Ensures your drive won't get filled with useless timecard data.
+- i3status text. Run `timecard i3status` and it will return how many hours worked to the nearest quarter, or how long you've been on break, depending on if you are clocked in or not.
 - Automatic update checking (requires `requests` to be installed)
-- 
 
 # Command Usage
 
-TODO: Write this
+`timecard [command]`
+- `<no args>`: Shows time log, how many hours worked, how much time left until you're done, and how many hours you've been on break.
+- `install`: Installs timecard.py to the user folder. See [Automatic Install](#automatic-install) for exactly what this does.
+- `uninstall`: Removes timecard.py from the system.
+- `in [offset]` (alias `i`): Clocks in if you haven't already.
+  - If offset is supplied as an integer, it will clock in `[offset]` minutes ago.
+  - If offset is supplied as a 24-hour time (e.g. 17:31), it will clock in at that time.
+  - If no offset is supplied, it will clock in now.
+- `out [offset]` (alias `o`): Clocks out if you haven't already.
+  - See `in` for offset usage.
+- `clock [offset]` (alias `c`): Clocks in or out, depending on current timecard state.
+  - See `in` for offset usage.
+- `undo` (alias `u`): Undos the last clock in/out action.
+- `version` (alias `v`): Prints the current version of timecard.py.
+- `help` or `?`: Prints out a help message explaining command usage
 
 # Installing
+
+## Requirements
+- Python 3 or later
+- (optional) requests installed via pip3. Used for automatic updates.
 
 ## Automatic Install
 - Run `python3 timecard.py install`. This will perform the following:
     1. Move `timecard.py` to `~/.local/bin/` and remove the `.py` extension
-    1. Add a line to .bashrc that will run `timecard auto`
-    1. Attempt to give `timecard` executable permissions
+    2. Add a line to .bashrc that will run `timecard auto`
+    3. Attempt to give `timecard` executable permissions
         - If this fails, timecard will alert you and prompt if you want to add an alias instead
-    2. Check if you already have `~/.local/bin` in your PATH. If not, it will prompt if you want to add it.
+    4. Check if you already have `~/.local/bin` in your PATH. If not, it will prompt if you want to add it.
         - If you answer no, timecard will prompt if you want to add an alias instead
+    5. Run `sudo pip3 install requests` for automatic updates
 - Now you can run `timecard`
 
 ## Manual Install - Linux
