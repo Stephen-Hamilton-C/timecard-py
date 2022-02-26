@@ -347,7 +347,10 @@ if getArgument() != 'I3STATUS':
 		except requests.exceptions.RequestException:
 			pass
 	except ImportError:
-		print('Timecard: Unable to check for updates! To get automatic updates, run `sudo pip3 install requests`')
+		sudo = 'sudo '
+		if system() == 'windows':
+			sudo = ''
+		print('Timecard: Unable to check for updates! To get automatic updates, run `'+sudo+'pip3 install requests`')
 
 	# Cleanup old timecards, if any
 	for timeFile in os.listdir():
