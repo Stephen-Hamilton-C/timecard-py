@@ -2,9 +2,9 @@
 
 ###########################################################################################
 # Stephen-Hamilton-C - Licensed under the GNU GPL v3 License.
-# Source code can be found at https://github.com/Stephen-Hamilton-C/Timecard
-# Place this script anywhere, and modify .bashrc so it runs this script with the auto arg.
-# e.g. `python3 ~/timecard/timecard.py auto`
+# Source code can be found at https://github.com/Stephen-Hamilton-C/timecard
+# Run `python3 timecard.py install` to automagically install this script into your system.
+# Also install requests with `sudo pip3 install requests` for automatic update checking.
 ###########################################################################################
 
 import sys, os, stat, json, time
@@ -267,6 +267,13 @@ def installCommand():
 				aliasPrompt(bashrcPath, exePath)
 			bashrcFile.write('\n')
 			print('Installed timecard v'+str(VERSION)+' to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
+			try:
+				import requests
+			except ImportError:
+				sudo = 'sudo '
+				if system() == 'windows':
+					sudo = ''
+				print('Also run `'+sudo+'pip3 install requests` for automatic update checking.')
 			bashrcFile.close()
 
 
