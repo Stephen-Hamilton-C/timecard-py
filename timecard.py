@@ -271,7 +271,7 @@ def installCommand():
 				import requests
 			except ImportError:
 				sudo = 'sudo '
-				if system() == 'windows':
+				if system() == 'Windows':
 					sudo = ''
 				print('Also run `'+sudo+'pip3 install requests` for automatic update checking.')
 			bashrcFile.close()
@@ -348,14 +348,13 @@ if getArgument() != 'I3STATUS':
 			versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/main/version.txt')
 			versionRequest.raise_for_status()
 			latestVersion = Version(versionRequest.text)
-			currentVersion = Version(VERSION)
-			if latestVersion.number > currentVersion.number:
+			if latestVersion.number > VERSION.number:
 				print('An update is available for timecard.py!')
 		except requests.exceptions.RequestException:
 			pass
 	except ImportError:
 		sudo = 'sudo '
-		if system() == 'windows':
+		if system() == 'Windows':
 			sudo = ''
 		print('Timecard: Unable to check for updates! To get automatic updates, run `'+sudo+'pip3 install requests`')
 
