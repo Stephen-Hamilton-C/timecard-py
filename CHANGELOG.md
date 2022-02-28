@@ -12,7 +12,7 @@ timecard.py uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Fixed <!-- omit in toc -->
 
-- Fixed version command causing errors due to update checking
+- Version command causing errors due to update checking
 
 # 1.0.0 - 2022-02-26
 
