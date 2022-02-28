@@ -1,12 +1,22 @@
-# Changelog
+# Changelog <!-- omit in toc -->
 All notable changes to timecard.py will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 timecard.py uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# 1.0.0 - Initial Release
+# Versions <!-- omit in toc -->
+- [1.0.1 - 2022-02-28](#101---2022-02-28)
+- [1.0.0 - 2022-02-26](#100---2022-02-26)
 
-## Features
+# 1.0.1 - 2022-02-28
+
+## Fixed <!-- omit in toc -->
+
+- Fixed version command causing errors due to update checking
+
+# 1.0.0 - 2022-02-26
+
+## Features <!-- omit in toc -->
 
 - Clock in and out at any time of the day.
 - Reports how many hours you've been working.
