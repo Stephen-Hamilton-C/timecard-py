@@ -5,8 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 timecard.py uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # Versions <!-- omit in toc -->
+- [1.0.2 - [Unreleased]](#102---unreleased)
 - [1.0.1 - 2022-02-28](#101---2022-02-28)
 - [1.0.0 - 2022-02-26](#100---2022-02-26)
+
+# 1.0.2 - [Unreleased]
+
+## Changed
+
+- Update notification format
+
+## Removed
+
+- Update checking in version command
 
 # 1.0.1 - 2022-02-28
 
