@@ -12,6 +12,8 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
+# TODO: Automatic updating
+
 class Version:
 	def __init__(self, versionStr) -> None:
 		version = versionStr.split('.')
@@ -24,7 +26,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION: Version = Version('1.0.1')
+VERSION: Version = Version('1.0.2')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -320,8 +322,6 @@ def getArgument(argIndex = 1) -> str:
 
 def printVersion():
 	print('timecard.py version ' + str(VERSION))
-	if latestVersion != None and latestVersion.number > VERSION.number:
-		print('An update is available! New version: ' + versionRequest.text)
 
 def printUsage():
 	print('\ntimecard.py commands:')
@@ -345,11 +345,15 @@ if getArgument() != 'I3STATUS':
 	try:
 		import requests
 		try:
-			versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/Timecard/main/version.txt')
+			versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/timecard/main/version.txt')
 			versionRequest.raise_for_status()
 			latestVersion = Version(versionRequest.text)
 			if latestVersion.number > VERSION.number:
 				print('An update is available for timecard.py!')
+				print('Current version: '+str(VERSION)+', new version: '+str(latestVersion)+'.')
+				print('Go to https://github.com/Stephen-Hamilton-C/timecard/releases/latest to download the update.')
+				print('----------------------------------------------------------------')
+				print()
 		except requests.exceptions.RequestException:
 			pass
 	except ImportError:
