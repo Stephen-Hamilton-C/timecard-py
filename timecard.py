@@ -24,7 +24,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION: Version = Version('1.0.0')
+VERSION: Version = Version('1.0.1')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -320,7 +320,7 @@ def getArgument(argIndex = 1) -> str:
 
 def printVersion():
 	print('timecard.py version ' + str(VERSION))
-	if latestVersion != None and latestVersion.number > currentVersion.number:
+	if latestVersion != None and latestVersion.number > VERSION.number:
 		print('An update is available! New version: ' + versionRequest.text)
 
 def printUsage():
