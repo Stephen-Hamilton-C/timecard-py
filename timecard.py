@@ -55,17 +55,17 @@ def saveFile():
 	with open(TIMECARD_FILE, 'w') as timecardFile:
 		timeEntriesJson: str = json.dumps(timeEntries)
 		timecardFile.write(timeEntriesJson)
-  
+
 def clockIn(clockedTime):
     newEntry: dict[str, int] = { "startTime": round(clockedTime), "endTime": 0 }
     timeEntries.append(newEntry)
-    
+
 def clockOut(clockedTime):
     lastEntry: dict[str, int] = timeEntries[-1]
     lastEntry['endTime'] = round(clockedTime)
-    
+
 def getClockState() -> str:
-    # Clock state needs data to be loaded	
+    # Clock state needs data to be loaded
 	if len(timeEntries) == 0:
 		try:
 			readFile()
@@ -118,7 +118,7 @@ def remainingTimeCommand():
 	print(formattedLocalized)
 	print()
 
-    
+
 def clockCommand():
 	clockState = getClockState()
 	clockTime = time.time()
@@ -129,7 +129,7 @@ def clockCommand():
 			clockTime -= offset*60
 		except ValueError:
 			try:
-				# Try parsing as 24-hour time 
+				# Try parsing as 24-hour time
 				offsetTime = datetime.strptime(getArgument(2), '%H:%M')
 				offsetDate = datetime.now().replace(hour=offsetTime.hour, minute=offsetTime.minute, second=0)
 				offsetTimestamp = offsetDate.timestamp()
@@ -172,7 +172,7 @@ def clockCommand():
 		hoursWorkedCommand()
 	print('Clocked ' + clockState.lower() + ' at ' + datetime.fromtimestamp(clockTime).strftime('%H:%M'))
 	saveFile()
- 
+
 def getNearestQuarterHour(totalTime):
 	return totalTime.tm_hour + (round(totalTime.tm_min/15) * 15) / 60
 
@@ -339,34 +339,6 @@ def printUsage():
 def isCommandOrAlias(action, cmd):
 	return action == cmd or (len(action) == 1 and action[0] == cmd[0])
 
-if getArgument() != 'I3STATUS':
-	# Check for updates
-	latestVersion = None
-	try:
-		import requests
-		try:
-			versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/timecard/main/version.txt')
-			versionRequest.raise_for_status()
-			latestVersion = Version(versionRequest.text)
-			if latestVersion.number > VERSION.number:
-				print('An update is available for timecard.py!')
-				print('Current version: '+str(VERSION)+', new version: '+str(latestVersion)+'.')
-				print('Go to https://github.com/Stephen-Hamilton-C/timecard/releases/latest to download the update.')
-				print('----------------------------------------------------------------')
-				print()
-		except requests.exceptions.RequestException:
-			pass
-	except ImportError:
-		sudo = 'sudo '
-		if system() == 'Windows':
-			sudo = ''
-		print('Timecard: Unable to check for updates! To get automatic updates, run `'+sudo+'pip3 install requests`')
-
-	# Cleanup old timecards, if any
-	for timeFile in os.listdir():
-		if os.path.isfile(timeFile) and timeFile.startswith('timecard.') and timeFile.endswith('.json') and os.stat(timeFile).st_mtime < time.time() - 7*60*60*24:
-			print('Removing old timecard: '+timeFile)
-			os.remove(timeFile)
 
 
 
@@ -398,16 +370,16 @@ elif not os.path.exists(TIMECARD_FILE):
 	# Also make sure the user hasn't done this in another instance
 	if prompt != 'n' and not os.path.exists(TIMECARD_FILE):
 		clockCommand()
-		
+
 elif getArgument() == 'AUTO':
     # Script was run automatically by .bashrc (if configured that way) and timecard already exists
 	print('Timecard already present for today. If you need to clock ' + getClockState().lower() + ', run `python3 '+__file__+'`')
 else:
 	readFile()
-  
+
 	# Try to get command from argument
 	action = getArgument()
-		
+
 	if isCommandOrAlias(action, 'CLOCK'):
 		clockCommand()
 	elif isCommandOrAlias(action, 'IN'):
@@ -431,3 +403,33 @@ else:
 		if action[0] != '?' and action != 'HELP':
 			print('Unknown command.')
 		printUsage()
+
+
+# Check for updates
+if getArgument() != 'I3STATUS':
+	latestVersion = None
+	try:
+		import requests
+		try:
+			versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/timecard/main/version.txt')
+			versionRequest.raise_for_status()
+			latestVersion = Version(versionRequest.text)
+			if latestVersion.number > VERSION.number:
+				print('An update is available for timecard.py!')
+				print('Current version: '+str(VERSION)+', new version: '+str(latestVersion)+'.')
+				print('Go to https://github.com/Stephen-Hamilton-C/timecard/releases/latest to download the update.')
+				print('----------------------------------------------------------------')
+				print()
+		except requests.exceptions.RequestException:
+			pass
+	except ImportError:
+		sudo = 'sudo '
+		if system() == 'Windows':
+			sudo = ''
+		print('Timecard: Unable to check for updates! To get automatic updates, run `'+sudo+'pip3 install requests`')
+
+	# Cleanup old timecards, if any
+	for timeFile in os.listdir():
+		if os.path.isfile(timeFile) and timeFile.startswith('timecard.') and timeFile.endswith('.json') and os.stat(timeFile).st_mtime < time.time() - 7*60*60*24:
+			print('Removing old timecard: '+timeFile)
+			os.remove(timeFile)
