@@ -32,16 +32,19 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION: Version = Version('1.1.0')
+VERSION = Version('1.0.0') # FIXME: Put this back when done
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
 TIMECARD_PATH: str = os.path.expanduser('~/.local/share/timecard')
-# TIMECARD_PATH: str = os.path.dirname(SCRIPT_PATH)
 INSTALL_DIR: str = os.path.expanduser('~/.local/bin')
 if system() == 'Windows':
 	TIMECARD_PATH = os.path.expanduser('~\\AppData\\Local\\timecard')
 	INSTALL_DIR = os.path.expanduser('~')
+
+# Constants for testing
+GITHUB_BRANCH = 'updater'
+# TIMECARD_PATH: str = os.path.dirname(SCRIPT_PATH)
 
 # Ensure cwd is timecard dir
 if not os.path.exists(TIMECARD_PATH):
@@ -372,7 +375,7 @@ def checkForUpdates(alertUser = True):
 		import requests
 		try:
 			# Try to get latest version
-			versionRequest = requests.get('https://raw.githubusercontent.com/'+GITHUB_REPO+'/main/version.txt')
+			versionRequest = requests.get('https://raw.githubusercontent.com/'+GITHUB_REPO+'/'+GITHUB_BRANCH+'/version.txt')
 			versionRequest.raise_for_status() # Throw a RequestException if file is not found (maybe not online)
 			latestVersion = Version(versionRequest.text)
 
