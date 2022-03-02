@@ -483,7 +483,7 @@ else:
 			print('Unknown command.')
 		printUsage()
 
-if getArgument() != 'I3STATUS' or getArgument() != 'UPDATE':
+if getArgument() != 'I3STATUS' and getArgument() != 'UPDATE':
 	checkForUpdates()
 
 	# Cleanup old timecards, if any
