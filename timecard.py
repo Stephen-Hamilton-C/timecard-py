@@ -338,7 +338,7 @@ def updateCommand():
 		import requests
 
 		# Go to script directory
-		os.chdir(SCRIPT_PATH)
+		os.chdir(os.path.dirname(SCRIPT_PATH))
 
 		# Prompt user on which platform to get. Defaulting to built.
 		print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
