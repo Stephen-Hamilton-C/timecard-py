@@ -3,6 +3,7 @@ timecard.*.json
 
 # Nuitka build files
 *.build
+*.onefile-build
 *.dist
 
 ##### Auto-generated .gitignore Python template #####
