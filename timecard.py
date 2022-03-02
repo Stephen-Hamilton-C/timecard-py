@@ -344,10 +344,14 @@ def updateCommand():
 		print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
 		print('Usually you want to use the raw Python script, but if you don\'t have Python3 installed, the built version is usually what you want.')
 		print('If you are uncertain, just go with `built`.')
-		timecardTypePrompt = input('Which platform of Timecard do you want? (py/BUILT): ')
-		timecardType = '.exe' if system() == 'Windows' else ''
-		if timecardTypePrompt.upper()[0] == 'P':
+		timecardTypePrompt = input('Which platform of Timecard do you want? (py/built/CANCEL): ').upper()
+		if isCommandOrAlias(timecardTypePrompt, 'PY'):
 			timecardType = '.py'
+		elif isCommandOrAlias(timecardTypePrompt, 'BUILT'):
+			timecardType = '.exe' if system() == 'Windows' else ''
+		else:
+			print('Canceling update.')
+			return
 
 		# Download new version and write to a .new file
 		print('Downloading timecard'+timecardType+'...')
@@ -359,13 +363,17 @@ def updateCommand():
 		# Replace current file with new file
 		print('Updating timecard to v'+str(latestVersion)+'...')
 		os.rename(__file__, 'timecard.old')
-		if timecardType == '.exe':
-			scriptName = 'timecard.exe'
-		os.rename(newTimecardName+'.new', scriptName)
+		os.rename(newTimecardName+'.new', 'timecard'+timecardType)
+
+		try:
+			# Set timecard to rwx by user
+			os.chmod('timecard'+timecardType, stat.S_IRWXU)
+		except Exception:
+			pass
 
 		# Notify the user and delete this file
 		print('Timecard has been updated!')
-		os.remove(__file__)
+		os.remove('timecard.old')
 
 def checkForUpdates(alertUser = True):
 	global latestVersion
