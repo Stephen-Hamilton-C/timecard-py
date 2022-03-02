@@ -1,4 +1,4 @@
-# Timecard.py <!-- omit in toc -->
+# Timecard <!-- omit in toc -->
 A simple timecard command line python script. Written by a developer, for developers. It can be configured to automatically run when you open a terminal, making this ideal for our terminal-heavy workspace. Making sure you never forget to clock in.
 
 # Table of Contents <!-- omit in toc -->
@@ -31,8 +31,8 @@ A simple timecard command line python script. Written by a developer, for develo
 
 `timecard [command]`
 - `<no args>`: Shows time log, how many hours worked, how much time left until you're done, and how many hours you've been on break.
-- `install`: Installs timecard.py to the user folder. See [Automatic Install](#automatic-install) for exactly what this does.
-- `uninstall`: Removes timecard.py from the system.
+- `install`: Installs timecard to the user folder. See [Automatic Install](#automatic-install) for exactly what this does.
+- `uninstall`: Removes timecard from the system.
 - `in [offset]` (alias `i`): Clocks in if you haven't already.
   - If offset is supplied as an integer, it will clock in `[offset]` minutes ago.
   - If offset is supplied as a 24-hour time (e.g. 17:31), it will clock in at that time.
@@ -42,7 +42,8 @@ A simple timecard command line python script. Written by a developer, for develo
 - `clock [offset]` (alias `c`): Clocks in or out, depending on current timecard state.
   - See `in` for offset usage.
 - `undo` (alias `u`): Undos the last clock in/out action.
-- `version` (alias `v`): Prints the current version of timecard.py.
+- `update`: Updates timecard to the latest version
+- `version` (alias `v`): Prints the current version of timecard.
 - `help` or `?`: Prints out a help message explaining command usage
 
 # Installing

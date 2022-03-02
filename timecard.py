@@ -3,8 +3,12 @@
 ###########################################################################################
 # Stephen-Hamilton-C - Licensed under the GNU GPL v3 License.
 # Source code can be found at https://github.com/Stephen-Hamilton-C/timecard
-# Run `python3 timecard.py install` to automagically install this script into your system.
+# Run `python3 timecard install` to automagically install this script into your system.
 # Also install requests with `sudo pip3 install requests` for automatic update checking.
+
+# If you fork this project, change the below constant to `<username>/<repo>`.
+# If you don't, update checking and getting will come from my repo.
+GITHUB_REPO = 'Stephen-Hamilton-C/timecard'
 ###########################################################################################
 
 import sys, os, stat, json, time
@@ -12,7 +16,9 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
-# TODO: Automatic updating
+# TODO: Test automatic updating
+# TODO: Update README to account for built versions
+# TODO: Update installation instructions in RELEASE
 
 class Version:
 	def __init__(self, versionStr) -> None:
@@ -26,7 +32,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION: Version = Version('1.0.2')
+VERSION: Version = Version('1.1.0')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -42,7 +48,8 @@ if not os.path.exists(TIMECARD_PATH):
 	os.makedirs(TIMECARD_PATH)
 os.chdir(TIMECARD_PATH)
 
-isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard'))
+latestVersion = None
+isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard.exe'))
 timeEntries: list = [ ]
 
 def readFile():
@@ -151,7 +158,7 @@ def clockCommand():
 			return
 		# Check that we aren't already clocked in
 		if len(timeEntries) > 0 and timeEntries[-1]['endTime'] == 0:
-			print('Already clocked in! It seems another instance of timecard.py was running...')
+			print('Already clocked in! It seems another instance of timecard was running...')
 			return
 
 		clockIn(clockTime)
@@ -165,7 +172,7 @@ def clockCommand():
 			return
 		# Check that we aren't already clocked out
 		if timeEntries[-1]['endTime'] != 0:
-			print('Already clocked out! It seems another instance of timecard.py was running...')
+			print('Already clocked out! It seems another instance of timecard was running...')
 			return
 
 		clockOut(clockTime)
@@ -231,27 +238,27 @@ def aliasPrompt(bashrcPath, exePath):
 
 def installCommand():
 	if isInstalled:
-		print('timecard.py is already installed!')
+		print('timecard is already installed!')
 	else:
 		if not os.path.exists(INSTALL_DIR):
 			os.makedirs(INSTALL_DIR)
 
 		if system() == 'Windows':
-			move(SCRIPT_PATH, os.path.join(INSTALL_DIR, 'timecard.py'))
-			print('Installed timecard v'+str(VERSION)+' to ' + INSTALL_DIR + '. Use `python3 timecard.py` to run the script')
+			move(SCRIPT_PATH, os.path.join(INSTALL_DIR, __file__))
+			print('Installed timecard v'+str(VERSION)+' to ' + INSTALL_DIR + '. Use `python3 '+__file__+'` to run the script')
 		else:
 			bashrcPath = os.path.expanduser('~/.bashrc')
 			bashrcFile = open(bashrcPath, 'a')
 			exePath = os.path.join(INSTALL_DIR, 'timecard')
 
-			# Move timecard.py to install dir
+			# Move timecard to install dir
 			move(SCRIPT_PATH, exePath)
 
 			# Append to bashrc
 			bashrcFile.write('\n# Timecard autorun\n')
 			bashrcFile.write('python3 ' + exePath + ' auto #timecard\n')
 			try:
-				# Set timecard.py to rwx by user
+				# Set timecard to rwx by user
 				os.chmod(exePath, stat.S_IRWXU)
 
 				# Set PATH to include .local/bin, if not already
@@ -264,8 +271,8 @@ def installCommand():
 						# If user doesn't want to set path, we can try an alias
 						aliasPrompt(bashrcPath, exePath)
 			except Exception:
-				# Probably couldn't set timecard.py to be rwx. We could use an alias tho
-				print('Unable to make timecard.py executable! You\'ll have to use `python3 timecard.py` to run Timecard.')
+				# Probably couldn't set timecard to be rwx. We could use an alias tho
+				print('Unable to make timecard executable! You\'ll have to use `python3 timecard` to run Timecard.')
 				aliasPrompt(bashrcPath, exePath)
 			bashrcFile.write('\n')
 			print('Installed timecard v'+str(VERSION)+' to ' + INSTALL_DIR + '. Ensure that is in your PATH and then use `timecard` to run the script')
@@ -296,10 +303,10 @@ def uninstallCommand():
 					strippedLine = line.strip()
 					if strippedLine != '# Timecard autorun' and not strippedLine.endswith('#timecard'):
 						bashrcFile.write(line)
-		print('timecard.py v'+str(VERSION)+' has been uninstalled!')
+		print('timecard v'+str(VERSION)+' has been uninstalled!')
 		os.remove(SCRIPT_PATH)
 	else:
-		print('timecard.py is not installed!')
+		print('timecard is not installed!')
 
 def undoCommand():
 	clockState = getClockState()
@@ -321,18 +328,85 @@ def getArgument(argIndex = 1) -> str:
 	return ' '
 
 def printVersion():
-	print('timecard.py version ' + str(VERSION))
+	print('timecard version ' + str(VERSION))
+
+def updateCommand():
+	if checkForUpdates(False):
+		import requests
+
+		# Go to script directory
+		scriptDir = os.path.dirname(SCRIPT_PATH)
+		scriptName = os.path.basename(SCRIPT_PATH)
+		os.chdir(scriptDir)
+
+		# Prompt user on which platform to get. Defaulting to built.
+		print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
+		print('Usually you want to use the raw Python script, but if you don\'t have Python3 installed, the built version is usually what you want.')
+		print('If you are uncertain, just go with `built`.')
+		timecardTypePrompt = input('Which platform of Timecard do you want? (py/BUILT): ')
+		timecardType = '.exe' if system() == 'Windows' else ''
+		if timecardTypePrompt.upper()[0] == 'P':
+			timecardType = '.py'
+
+		# Download new version and write to a .new file
+		print('Downloading timecard'+timecardType+'...')
+		newTimecardName = 'timecard'+timecardType
+		updateRequest = requests.get('https://github.com/'+GITHUB_REPO+'/releases/download/v'+str(latestVersion)+'/'+newTimecardName)
+		updateRequest.raise_for_status()
+		open(newTimecardName+'.new', 'wb').write(updateRequest.content)
+
+		# Replace current file with new file
+		print('Updating timecard to v'+str(latestVersion)+'...')
+		os.rename(SCRIPT_PATH, scriptDir+'timecard.old')
+		if timecardType == '.exe':
+			scriptName = 'timecard.exe'
+		os.rename(newTimecardName+'.new', scriptName)
+
+		# Notify the user and delete this file
+		print('Timecard has been updated!')
+		os.remove(__file__)
+
+def checkForUpdates(alertUser = True):
+	# Try to import requests
+	try:
+		import requests
+		try:
+			# Try to get latest version
+			versionRequest = requests.get('https://raw.githubusercontent.com/'+GITHUB_REPO+'/main/version.txt')
+			versionRequest.raise_for_status() # Throw a RequestException if file is not found (maybe not online)
+			latestVersion = Version(versionRequest.text)
+
+			# Notify user of new update if one is available
+			if latestVersion.number > VERSION.number:
+				if alertUser:
+					print('----------------------------------------------------------------')
+					print('An update is available for timecard!')
+					print('Current version: '+str(VERSION)+', new version: '+str(latestVersion)+'.')
+					print('Go to https://github.com/'+GITHUB_REPO+'/releases/latest or run `timecard update` to download the update.')
+					print('----------------------------------------------------------------')
+					print()
+				return True
+		except requests.exceptions.RequestException:
+			pass
+	except ImportError:
+		# Requests is not installed, notify user
+		sudo = 'sudo '
+		if system() == 'Windows':
+			sudo = ''
+		print('Timecard: Unable to check for updates! To get automatic updates, run `'+sudo+'pip3 install requests`')
+	return False
 
 def printUsage():
-	print('\ntimecard.py commands:')
+	print('\ntimecard commands:')
 	print('	<no command> - Shows time log, how many hours worked, how much time you have left to meet your desired hours worked ('+str(EXPECTED_WORK_HOURS / 60 / 60)+' hours), and how many hours you\'ve been on break.')
-	print('	Install - Installs timecard.py to the user folder, adds an autorun to .bashrc, and adds ~/.local/bin to PATH if necessary.')
-	print('	Uninstall - Removes timecard.py from system.')
+	print('	Install - Installs timecard to the user folder, adds an autorun to .bashrc, and adds ~/.local/bin to PATH if necessary.')
+	print('	Uninstall - Removes timecard from system.')
 	print('	IN (I) [offset] - Clocks in if you aren\'t already. If an offset is supplied, it logs you as clocked in OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	CLOCK (C) [offset] - Automatically determines whether to clock in/out. See IN and OUT commands.')
 	print('	UNDO (U) - Undos the last clock in/out action')
-	print('	Version (V) - Prints the current version of timecard.py.')
+	print('	Update - Updates timecard to latest version if one is available.')
+	print('	Version (V) - Prints the current version of timecard.')
 	print('	Help | ? - Prints this help message.')
 	print()
 
@@ -394,6 +468,8 @@ else:
 			clockCommand()
 	elif isCommandOrAlias(action, 'UNDO'):
 		undoCommand()
+	elif action == 'UPDATE':
+		updateCommand()
 	elif isCommandOrAlias(action, 'VERSION'):
 		printVersion()
 	elif action == ' ':
@@ -404,29 +480,8 @@ else:
 			print('Unknown command.')
 		printUsage()
 
-
-# Check for updates
-if getArgument() != 'I3STATUS':
-	latestVersion = None
-	try:
-		import requests
-		try:
-			versionRequest = requests.get('https://raw.githubusercontent.com/Stephen-Hamilton-C/timecard/main/version.txt')
-			versionRequest.raise_for_status()
-			latestVersion = Version(versionRequest.text)
-			if latestVersion.number > VERSION.number:
-				print('An update is available for timecard.py!')
-				print('Current version: '+str(VERSION)+', new version: '+str(latestVersion)+'.')
-				print('Go to https://github.com/Stephen-Hamilton-C/timecard/releases/latest to download the update.')
-				print('----------------------------------------------------------------')
-				print()
-		except requests.exceptions.RequestException:
-			pass
-	except ImportError:
-		sudo = 'sudo '
-		if system() == 'Windows':
-			sudo = ''
-		print('Timecard: Unable to check for updates! To get automatic updates, run `'+sudo+'pip3 install requests`')
+if getArgument() != 'I3STATUS' or getArgument() != 'UPDATE':
+	checkForUpdates()
 
 	# Cleanup old timecards, if any
 	for timeFile in os.listdir():
