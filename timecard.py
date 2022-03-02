@@ -32,7 +32,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION = Version('1.0.0') # FIXME: Put this back when done
+VERSION = Version('0.0.0') # FIXME: Put this back when done
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -43,7 +43,7 @@ if system() == 'Windows':
 	INSTALL_DIR = os.path.expanduser('~')
 
 # Constants for testing
-GITHUB_BRANCH = 'updater'
+GITHUB_BRANCH = 'main'
 # TIMECARD_PATH: str = os.path.dirname(SCRIPT_PATH)
 
 # Ensure cwd is timecard dir
@@ -338,9 +338,7 @@ def updateCommand():
 		import requests
 
 		# Go to script directory
-		scriptDir = os.path.dirname(SCRIPT_PATH)
-		scriptName = os.path.basename(SCRIPT_PATH)
-		os.chdir(scriptDir)
+		os.chdir(SCRIPT_PATH)
 
 		# Prompt user on which platform to get. Defaulting to built.
 		print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
@@ -360,7 +358,7 @@ def updateCommand():
 
 		# Replace current file with new file
 		print('Updating timecard to v'+str(latestVersion)+'...')
-		os.rename(SCRIPT_PATH, scriptDir+'timecard.old')
+		os.rename(__file__, 'timecard.old')
 		if timecardType == '.exe':
 			scriptName = 'timecard.exe'
 		os.rename(newTimecardName+'.new', scriptName)
@@ -370,6 +368,7 @@ def updateCommand():
 		os.remove(__file__)
 
 def checkForUpdates(alertUser = True):
+	global latestVersion
 	# Try to import requests
 	try:
 		import requests
