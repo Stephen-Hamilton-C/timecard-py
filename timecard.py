@@ -362,8 +362,9 @@ def updateCommand():
 
 		# Replace current file with new file
 		print('Updating timecard to v'+str(latestVersion)+'...')
+		origName = __file__
 		os.rename(__file__, 'timecard.old')
-		os.rename(newTimecardName+'.new', 'timecard'+timecardType)
+		os.rename(newTimecardName+'.new', origName)
 
 		try:
 			# Set timecard to rwx by user
