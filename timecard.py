@@ -368,9 +368,9 @@ def updateCommand():
 
 		try:
 			# Set timecard to rwx by user
-			os.chmod('timecard'+timecardType, stat.S_IRWXU)
+			os.chmod(origName, stat.S_IRWXU)
 		except Exception:
-			pass
+			print('Could not mark updated file as executable! Use `chmod u+x '+os.path.realpath('timecard'+timecardType)+'` to mark as executable')
 
 		# Notify the user and delete this file
 		print('Timecard has been updated!')
