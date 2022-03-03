@@ -16,7 +16,6 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
-# TODO: Test automatic updating
 # TODO: Update README to account for built versions
 # TODO: Update installation instructions in RELEASE
 
@@ -32,16 +31,19 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION: Version = Version('1.1.0')
+VERSION = Version('1.1.0')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
 TIMECARD_PATH: str = os.path.expanduser('~/.local/share/timecard')
-# TIMECARD_PATH: str = os.path.dirname(SCRIPT_PATH)
 INSTALL_DIR: str = os.path.expanduser('~/.local/bin')
 if system() == 'Windows':
 	TIMECARD_PATH = os.path.expanduser('~\\AppData\\Local\\timecard')
 	INSTALL_DIR = os.path.expanduser('~')
+
+# Constants for testing
+GITHUB_BRANCH = 'main'
+# TIMECARD_PATH: str = os.path.dirname(SCRIPT_PATH)
 
 # Ensure cwd is timecard dir
 if not os.path.exists(TIMECARD_PATH):
@@ -335,18 +337,22 @@ def updateCommand():
 		import requests
 
 		# Go to script directory
-		scriptDir = os.path.dirname(SCRIPT_PATH)
-		scriptName = os.path.basename(SCRIPT_PATH)
-		os.chdir(scriptDir)
+		os.chdir(os.path.dirname(SCRIPT_PATH))
 
-		# Prompt user on which platform to get. Defaulting to built.
-		print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
-		print('Usually you want to use the raw Python script, but if you don\'t have Python3 installed, the built version is usually what you want.')
-		print('If you are uncertain, just go with `built`.')
-		timecardTypePrompt = input('Which platform of Timecard do you want? (py/BUILT): ')
-		timecardType = '.exe' if system() == 'Windows' else ''
-		if timecardTypePrompt.upper()[0] == 'P':
+		# Prompt user on which platform to get, if they didn't already provide an argument. Defaulting to built.
+		timecardTypePrompt = getArgument(2)
+		if not isCommandOrAlias(timecardTypePrompt, 'PY') and not isCommandOrAlias(timecardTypePrompt, 'BUILT'):
+			print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
+			print('Usually you want to use the raw Python script, but if you don\'t have Python3 installed, the built version is usually what you want.')
+			print('If you are uncertain, just go with `built`.')
+			timecardTypePrompt = input('Which platform of Timecard do you want? (py/built/CANCEL): ').upper()
+		if isCommandOrAlias(timecardTypePrompt, 'PY'):
 			timecardType = '.py'
+		elif isCommandOrAlias(timecardTypePrompt, 'BUILT'):
+			timecardType = '.exe' if system() == 'Windows' else ''
+		else:
+			print('Canceling update.')
+			return
 
 		# Download new version and write to a .new file
 		print('Downloading timecard'+timecardType+'...')
@@ -357,22 +363,32 @@ def updateCommand():
 
 		# Replace current file with new file
 		print('Updating timecard to v'+str(latestVersion)+'...')
-		os.rename(SCRIPT_PATH, scriptDir+'timecard.old')
-		if timecardType == '.exe':
-			scriptName = 'timecard.exe'
-		os.rename(newTimecardName+'.new', scriptName)
+		origName = __file__
+		os.rename(__file__, 'timecard.old')
+		os.rename(newTimecardName+'.new', origName)
+
+		try:
+			# Set timecard to rwx by user
+			os.chmod(origName, stat.S_IRWXU)
+		except Exception:
+			print('Could not mark updated file as executable! Use `chmod u+x '+os.path.realpath('timecard'+timecardType)+'` to mark as executable')
 
 		# Notify the user and delete this file
+		print()
 		print('Timecard has been updated!')
-		os.remove(__file__)
+		print()
+		os.remove('timecard.old')
+	else:
+		print('No updates available')
 
 def checkForUpdates(alertUser = True):
+	global latestVersion
 	# Try to import requests
 	try:
 		import requests
 		try:
 			# Try to get latest version
-			versionRequest = requests.get('https://raw.githubusercontent.com/'+GITHUB_REPO+'/main/version.txt')
+			versionRequest = requests.get('https://raw.githubusercontent.com/'+GITHUB_REPO+'/'+GITHUB_BRANCH+'/version.txt')
 			versionRequest.raise_for_status() # Throw a RequestException if file is not found (maybe not online)
 			latestVersion = Version(versionRequest.text)
 
@@ -405,7 +421,7 @@ def printUsage():
 	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	CLOCK (C) [offset] - Automatically determines whether to clock in/out. See IN and OUT commands.')
 	print('	UNDO (U) - Undos the last clock in/out action')
-	print('	Update - Updates timecard to latest version if one is available.')
+	print('	Update [py|built] - Updates timecard to latest version if one is available. The argument can be used to bypass platform prompt.')
 	print('	Version (V) - Prints the current version of timecard.')
 	print('	Help | ? - Prints this help message.')
 	print()
@@ -480,7 +496,7 @@ else:
 			print('Unknown command.')
 		printUsage()
 
-if getArgument() != 'I3STATUS' or getArgument() != 'UPDATE':
+if getArgument() != 'I3STATUS' and getArgument() != 'UPDATE':
 	checkForUpdates()
 
 	# Cleanup old timecards, if any
