@@ -16,7 +16,6 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
-# TODO: Test automatic updating
 # TODO: Update README to account for built versions
 # TODO: Update installation instructions in RELEASE
 
@@ -32,7 +31,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION = Version('0.0.0') # FIXME: Put this back when done
+VERSION = Version('1.1.0')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -340,11 +339,13 @@ def updateCommand():
 		# Go to script directory
 		os.chdir(os.path.dirname(SCRIPT_PATH))
 
-		# Prompt user on which platform to get. Defaulting to built.
-		print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
-		print('Usually you want to use the raw Python script, but if you don\'t have Python3 installed, the built version is usually what you want.')
-		print('If you are uncertain, just go with `built`.')
-		timecardTypePrompt = input('Which platform of Timecard do you want? (py/built/CANCEL): ').upper()
+		# Prompt user on which platform to get, if they didn't already provide an argument. Defaulting to built.
+		timecardTypePrompt = getArgument(2)
+		if not isCommandOrAlias(timecardTypePrompt, 'PY') and not isCommandOrAlias(timecardTypePrompt, 'BUILT'):
+			print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
+			print('Usually you want to use the raw Python script, but if you don\'t have Python3 installed, the built version is usually what you want.')
+			print('If you are uncertain, just go with `built`.')
+			timecardTypePrompt = input('Which platform of Timecard do you want? (py/built/CANCEL): ').upper()
 		if isCommandOrAlias(timecardTypePrompt, 'PY'):
 			timecardType = '.py'
 		elif isCommandOrAlias(timecardTypePrompt, 'BUILT'):
@@ -373,8 +374,12 @@ def updateCommand():
 			print('Could not mark updated file as executable! Use `chmod u+x '+os.path.realpath('timecard'+timecardType)+'` to mark as executable')
 
 		# Notify the user and delete this file
+		print()
 		print('Timecard has been updated!')
+		print()
 		os.remove('timecard.old')
+	else:
+		print('No updates available')
 
 def checkForUpdates(alertUser = True):
 	global latestVersion
@@ -416,7 +421,7 @@ def printUsage():
 	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	CLOCK (C) [offset] - Automatically determines whether to clock in/out. See IN and OUT commands.')
 	print('	UNDO (U) - Undos the last clock in/out action')
-	print('	Update - Updates timecard to latest version if one is available.')
+	print('	Update [py|built] - Updates timecard to latest version if one is available. The argument can be used to bypass platform prompt.')
 	print('	Version (V) - Prints the current version of timecard.')
 	print('	Help | ? - Prints this help message.')
 	print()
