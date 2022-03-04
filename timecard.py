@@ -27,6 +27,56 @@ class Version:
 	def __str__(self) -> str:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
+class TimeEntry:
+	def __init__(self, start, end = 0) -> None:
+		self.start = start
+		self.end = end
+
+	@staticmethod
+	def fromJSON(data):
+		return TimeEntry(data["startTime"], data["endTime"])
+
+	def toJSON(self):
+		return { "startTime": round(self.start), "endTime": round(self.end) }
+
+class TimeEntries:
+	def __init__(self) -> None:
+		self._entries: list = []
+		entriesData = []
+		with open(TIMECARD_FILE, 'r') as timecardFile:
+			timecardData: str = timecardFile.read()
+			entriesData = json.loads(timecardData)
+		for entryData in entriesData:
+			entry: TimeEntry = TimeEntry.fromJSON(entryData)
+			self._entries.append(entry)
+
+	def isClockedIn(self) -> bool:
+		return len(self._entries) > 0 and self._entries[-1].end == 0
+
+	def isClockedOut(self) -> bool:
+		return len(self._entries) == 0 or self._entries[-1].end != 0
+
+	def clockIn(self, clockTime: int) -> None:
+		if self.isClockedIn():
+			# FIXME: Find better exception to raise here
+			raise Exception('Already clocked in! Logic error has occurred.')
+		self._entries.append(TimeEntry(clockTime))
+
+	def clockOut(self, clockTime: int) -> None:
+		if not self.isClockedIn():
+			# FIXME: Find better exception to raise here
+			raise Exception('Already clocked out! Logic error has occurred.')
+		self._entries[-1].end = clockTime
+
+	def writeChanges(self) -> None:
+		entriesData: list = []
+		for entry in self._entries:
+			entriesData.append(entry.toJSON())
+
+		with open(TIMECARD_FILE, 'w') as timecardFile:
+			timeEntriesJson: str = json.dumps(entriesData)
+			timecardFile.write(timeEntriesJson)
+
 # Setup constants
 VERSION = Version('1.1.0')
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -50,17 +100,6 @@ os.chdir(TIMECARD_PATH)
 latestVersion = None
 isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard.exe'))
 timeEntries: list = [ ]
-
-def readFile():
-	global timeEntries
-	with open(TIMECARD_FILE, 'r') as timecardFile:
-		timecardData: str = timecardFile.read()
-		timeEntries = json.loads(timecardData)
-
-def saveFile():
-	with open(TIMECARD_FILE, 'w') as timecardFile:
-		timeEntriesJson: str = json.dumps(timeEntries)
-		timecardFile.write(timeEntriesJson)
 
 def clockIn(clockedTime):
     newEntry: dict[str, int] = { "startTime": round(clockedTime), "endTime": 0 }
