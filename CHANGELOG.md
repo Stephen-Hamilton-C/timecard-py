@@ -18,6 +18,7 @@ timecard uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Changed <!-- omit in toc -->
 - Update notification format
 - Timecard now references itself as timecard rather than timecard.py
+- Built versions of Timecard are now included
 
 ## Removed <!-- omit in toc -->
 - Update checking in version command
