@@ -6,10 +6,11 @@
         {
             "label": "Build Timecard as Standalone executable",
             "type": "shell",
-            "command": "python3 -m nuitka --onefile timecard.py -o dist/timecard",
+            "command": "python3 -m nuitka --onefile timecard.py -o dist/timecard.bin",
             "windows": {
                 "command": "python -m nuitka --onefile timecard.py -o dist/timecard.exe"
-            }
+            },
+            "problemMatcher": []
         }
     ]
 }
