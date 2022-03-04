@@ -16,9 +16,6 @@ from datetime import date, datetime
 from platform import system
 from shutil import move
 
-# TODO: Update README to account for built versions
-# TODO: Update installation instructions in RELEASE
-
 class Version:
 	def __init__(self, versionStr) -> None:
 		version = versionStr.split('.')
@@ -343,7 +340,7 @@ def updateCommand():
 		timecardTypePrompt = getArgument(2)
 		if not isCommandOrAlias(timecardTypePrompt, 'PY') and not isCommandOrAlias(timecardTypePrompt, 'BUILT'):
 			print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
-			print('Usually you want to use the raw Python script, but if you don\'t have Python3 installed, the built version is usually what you want.')
+			print('Usually you want to use the raw Python script, but if you don\'t have Python 3.x installed, the built version is usually what you want.')
 			print('If you are uncertain, just go with `built`.')
 			timecardTypePrompt = input('Which platform of Timecard do you want? (py/built/CANCEL): ').upper()
 		if isCommandOrAlias(timecardTypePrompt, 'PY'):
