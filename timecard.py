@@ -11,6 +11,7 @@
 GITHUB_REPO = 'Stephen-Hamilton-C/timecard'
 ###########################################################################################
 
+from abc import abstractmethod
 import sys, os, stat, json, time
 from datetime import date, datetime
 from platform import system
@@ -58,7 +59,7 @@ class TimeEntries:
 
 	def clockIn(self, clockTime: int) -> None:
 		if self.isClockedIn():
-			# FIXME: Find better exception to raise here
+			# FIXME: Find better exception to raise here. Illegal state?
 			raise Exception('Already clocked in! Logic error has occurred.')
 		self._entries.append(TimeEntry(clockTime))
 
@@ -77,6 +78,37 @@ class TimeEntries:
 			timeEntriesJson: str = json.dumps(entriesData)
 			timecardFile.write(timeEntriesJson)
 
+class Command:
+	def __init__(self, name, alias = True) -> None:
+		self.name = name.upper()
+		if alias:
+			self.alias = self.name[0]
+
+	@staticmethod
+	def getNextCommand(userAction: str):
+		userAction = userAction.upper()
+		for cmd in COMMANDS:
+			if cmd.name == userAction or (cmd.alias != None and cmd.alias == userAction[0]):
+				return cmd
+
+		# TODO: Run help command with no args
+		raise NotImplementedError('Need to make path for unknown command')
+
+	@abstractmethod
+	def getHelp(self) -> str:
+		raise NotImplementedError('Command.getHelp() is an abstract method!')
+
+	@abstractmethod
+	def handle(self, args: list) -> None:
+		raise NotImplementedError('Command.handle() is an abstract method!')
+
+class VersionCommand(Command):
+	def getHelp(self) -> str:
+		return 'Prints the current version of timecard.'
+
+	def handle(self, args: list) -> None:
+		print('timecard version ' + str(VERSION))
+
 # Setup constants
 VERSION = Version('1.1.0')
 SCRIPT_PATH = os.path.realpath(__file__)
@@ -87,6 +119,9 @@ INSTALL_DIR: str = os.path.expanduser('~/.local/bin')
 if system() == 'Windows':
 	TIMECARD_PATH = os.path.expanduser('~\\AppData\\Local\\timecard')
 	INSTALL_DIR = os.path.expanduser('~')
+COMMANDS: dict = {
+	"VERSION": VersionCommand('VERSION'),
+}
 
 # Constants for testing
 GITHUB_BRANCH = 'main'
@@ -364,9 +399,6 @@ def getArgument(argIndex = 1) -> str:
 	if len(sys.argv) > argIndex:
 		return sys.argv[argIndex].strip().upper()
 	return ' '
-
-def printVersion():
-	print('timecard version ' + str(VERSION))
 
 def updateCommand():
 	if checkForUpdates(False):
