@@ -81,13 +81,15 @@ class TimeEntries:
 class Command:
 	def __init__(self, name, alias = True) -> None:
 		self.name = name.upper()
-		if alias:
+		if alias == True:
 			self.alias = self.name[0]
+		elif isinstance(alias, str):
+			self.alias = alias
 
 	@staticmethod
 	def getNextCommand(userAction: str):
 		userAction = userAction.upper()
-		for cmd in COMMANDS:
+		for _, cmd in COMMANDS:
 			if cmd.name == userAction or (cmd.alias != None and cmd.alias == userAction[0]):
 				return cmd
 
@@ -99,15 +101,32 @@ class Command:
 		raise NotImplementedError('Command.getHelp() is an abstract method!')
 
 	@abstractmethod
-	def handle(self, args: list) -> None:
+	def handle(self) -> None:
 		raise NotImplementedError('Command.handle() is an abstract method!')
+
+	def getArg(self, index: int) -> str:
+		if index < len(sys.argv):
+			return sys.argv[index].strip().upper()
 
 class VersionCommand(Command):
 	def getHelp(self) -> str:
 		return 'Prints the current version of timecard.'
 
-	def handle(self, args: list) -> None:
+	def handle(self) -> None:
 		print('timecard version ' + str(VERSION))
+
+class HelpCommand(Command):
+	def getHelp(self) -> str:
+		return 'Prints all help messages.'
+
+	def handle(self, args: list) -> None:
+		if self.getArg(1):
+			# TODO: Print help for just this command
+			pass
+		else:
+			for _, cmd in COMMANDS:
+				# TODO: Print help for all commands
+				pass
 
 # Setup constants
 VERSION = Version('1.1.0')
@@ -120,6 +139,7 @@ if system() == 'Windows':
 	TIMECARD_PATH = os.path.expanduser('~\\AppData\\Local\\timecard')
 	INSTALL_DIR = os.path.expanduser('~')
 COMMANDS: dict = {
+	"HELP": HelpCommand('HELP', '?'),
 	"VERSION": VersionCommand('VERSION'),
 }
 
