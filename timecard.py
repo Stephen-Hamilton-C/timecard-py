@@ -79,6 +79,8 @@ class TimeEntries:
 			timecardFile.write(timeEntriesJson)
 
 class Command:
+	HELP: str = 'N/A'
+
 	def __init__(self, name, alias = True) -> None:
 		self.name = name.upper()
 		if alias == True:
@@ -92,13 +94,13 @@ class Command:
 		for _, cmd in COMMANDS:
 			if cmd.name == userAction or (cmd.alias != None and cmd.alias == userAction[0]):
 				return cmd
+		# No matching command, return HelpCommand
+		return COMMANDS['HELP']
 
-		# TODO: Run help command with no args
-		raise NotImplementedError('Need to make path for unknown command')
-
-	@abstractmethod
-	def getHelp(self) -> str:
-		raise NotImplementedError('Command.getHelp() is an abstract method!')
+	def getFormattedHelp(self, tabbed = True) -> str:
+		tab = '	' if tabbed else ''
+		aliasHelp = ' ('+self.alias+')' if self.alias else ''
+		return tab+self.name.lower()+aliasHelp+' - '+self.HELP
 
 	@abstractmethod
 	def handle(self) -> None:
@@ -109,24 +111,24 @@ class Command:
 			return sys.argv[index].strip().upper()
 
 class VersionCommand(Command):
-	def getHelp(self) -> str:
-		return 'Prints the current version of timecard.'
+	HELP: str = 'Prints the current version of timecard.'
 
 	def handle(self) -> None:
 		print('timecard version ' + str(VERSION))
 
 class HelpCommand(Command):
-	def getHelp(self) -> str:
-		return 'Prints all help messages.'
+	HELP: str = 'Prints all help messages.'
 
-	def handle(self, args: list) -> None:
-		if self.getArg(1):
-			# TODO: Print help for just this command
-			pass
+	def handle(self) -> None:
+		if self.getArg(1) and COMMANDS[self.getArg(1)] != None:
+			print(COMMANDS[self.getArg(1)].getFormattedHelp(False))
 		else:
+			print()
+			print('timecard commands:')
+			print('	<no command> - Shows time log, how many hours worked, how much time you have left to meet your desired hours worked ('+str(EXPECTED_WORK_HOURS / 60 / 60)+' hours), and how many hours you\'ve been on break.')
 			for _, cmd in COMMANDS:
-				# TODO: Print help for all commands
-				pass
+				print(cmd.getFormattedHelp())
+			print()
 
 # Setup constants
 VERSION = Version('1.1.0')
