@@ -1,7 +1,10 @@
 # Timecard data, likely used for testing
 timecard.*.json
 
-
+# Nuitka build files
+*.build
+*.onefile-build
+*.dist
 
 ##### Auto-generated .gitignore Python template #####
 # Byte-compiled / optimized / DLL files
@@ -16,7 +19,6 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/

@@ -1,23 +1,40 @@
 # Changelog <!-- omit in toc -->
-All notable changes to timecard.py will be documented in this file.
+All notable changes to timecard will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-timecard.py uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+timecard uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # Versions <!-- omit in toc -->
+
+- [1.1.0 - Unreleased](#110---unreleased)
 - [1.0.1 - 2022-02-28](#101---2022-02-28)
 - [1.0.0 - 2022-02-26](#100---2022-02-26)
+
+# 1.1.0 - Unreleased
+
+## Added <!-- omit in toc -->
+- Updating function. Run `timecard update` to automatically install latest update
+
+## Changed <!-- omit in toc -->
+- Update notification format
+- Timecard now references itself as timecard rather than timecard.py
+- Built versions of Timecard are now included
+
+## Removed <!-- omit in toc -->
+- Update checking in version command
+
+
 
 # 1.0.1 - 2022-02-28
 
 ## Fixed <!-- omit in toc -->
-
 - Version command causing errors due to update checking
+
+
 
 # 1.0.0 - 2022-02-26
 
 ## Features <!-- omit in toc -->
-
 - Clock in and out at any time of the day.
 - Reports how many hours you've been working.
 - Coveniently gives hours worked rounded to nearest quarter.
