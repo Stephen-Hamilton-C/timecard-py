@@ -6,11 +6,11 @@ timecard uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # Versions <!-- omit in toc -->
 
-- [1.1.0 - Unreleased](#110---unreleased)
+- [1.1.0 - 2022-03-10](#110---2022-03-10)
 - [1.0.1 - 2022-02-28](#101---2022-02-28)
 - [1.0.0 - 2022-02-26](#100---2022-02-26)
 
-# 1.1.0 - Unreleased
+# 1.1.0 - 2022-03-10
 
 ## Added <!-- omit in toc -->
 - Updating function. Run `timecard update` to automatically install latest update
