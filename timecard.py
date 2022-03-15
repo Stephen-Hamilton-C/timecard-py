@@ -59,14 +59,12 @@ class TimeEntries:
 
 	def clockIn(self, clockTime: int) -> None:
 		if self.isClockedIn():
-			# FIXME: Find better exception to raise here. Illegal state?
-			raise Exception('Already clocked in! Logic error has occurred.')
+			raise RuntimeError('Already clocked in! Logic error has occurred.')
 		self._entries.append(TimeEntry(clockTime))
 
 	def clockOut(self, clockTime: int) -> None:
 		if not self.isClockedIn():
-			# FIXME: Find better exception to raise here
-			raise Exception('Already clocked out! Logic error has occurred.')
+			raise RuntimeError('Already clocked out! Logic error has occurred.')
 		self._entries[-1].end = clockTime
 
 	def writeChanges(self) -> None:
@@ -78,8 +76,16 @@ class TimeEntries:
 			timeEntriesJson: str = json.dumps(entriesData)
 			timecardFile.write(timeEntriesJson)
 
-class Command:
-	HELP: str = 'N/A'
+class Help:
+	def __init__(self, description: str, args: str = '') -> None:
+		self.DESCRIPTION = description
+		self.ARGS = args
+
+	def __str__(self) -> str:
+		return self.ARGS + ' - ' + self.DESCRIPTION
+
+class BaseCommand:
+	HELP = Help('N/A')
 
 	def __init__(self, name, alias = True) -> None:
 		self.name = name.upper()
@@ -99,8 +105,8 @@ class Command:
 
 	def getFormattedHelp(self, tabbed = True) -> str:
 		tab = '	' if tabbed else ''
-		aliasHelp = ' ('+self.alias+')' if self.alias else ''
-		return tab+self.name.lower()+aliasHelp+' - '+self.HELP
+		aliasHelp = ' ('+self.alias+') ' if self.alias else ' '
+		return tab+self.name.lower()+aliasHelp+str(self.HELP)
 
 	@abstractmethod
 	def handle(self) -> None:
@@ -110,14 +116,15 @@ class Command:
 		if index < len(sys.argv):
 			return sys.argv[index].strip().upper()
 
-class VersionCommand(Command):
-	HELP: str = 'Prints the current version of timecard.'
+class VersionCommand(BaseCommand):
+	HELP = Help('Prints the current version of timecard.')
 
 	def handle(self) -> None:
 		print('timecard version ' + str(VERSION))
 
-class HelpCommand(Command):
-	HELP: str = 'Prints all help messages.'
+class HelpCommand(BaseCommand):
+	HELP = Help('Prints all help messages.', '[command]')
+	STATUSHELP = Help('Shows time log, how many hours worked, how much time you have left to meet your desired hours worked, and how many hours you\'ve been on break.', '<no command>')
 
 	def handle(self) -> None:
 		if self.getArg(1) and COMMANDS[self.getArg(1)] != None:
@@ -125,10 +132,17 @@ class HelpCommand(Command):
 		else:
 			print()
 			print('timecard commands:')
-			print('	<no command> - Shows time log, how many hours worked, how much time you have left to meet your desired hours worked ('+str(EXPECTED_WORK_HOURS / 60 / 60)+' hours), and how many hours you\'ve been on break.')
+			print('	'+str(self.STATUSHELP))
 			for _, cmd in COMMANDS:
 				print(cmd.getFormattedHelp())
 			print()
+
+class ClockInCommand(BaseCommand):
+	HELP = Help('Clocks in if you aren\'t already. If an offset is supplied, it logs you as clocked in OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)', '[offset]')
+
+	def handle(self) -> None:
+		if self.getArg(1):
+			pass
 
 # Setup constants
 VERSION = Version('1.1.0')
