@@ -28,7 +28,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION = Version('1.1.0')
+VERSION = Version('1.1.1')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -131,7 +131,7 @@ def clockCommand():
 	if getArgument(2) != ' ':
 		try:
 			# Try parsing as just minutes
-			offset = int(getArgument(2))
+			offset = abs(int(getArgument(2)))
 			clockTime -= offset*60
 		except ValueError:
 			try:
