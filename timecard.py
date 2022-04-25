@@ -28,7 +28,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION = Version('1.1.1')
+VERSION = Version('1.1.2')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -48,7 +48,7 @@ if not os.path.exists(TIMECARD_PATH):
 os.chdir(TIMECARD_PATH)
 
 latestVersion = None
-isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard.exe'))
+isInstalled = os.path.exists(os.path.join(INSTALL_DIR, 'timecard.py')) or os.path.exists(os.path.join(INSTALL_DIR, 'timecard'))
 timeEntries: list = [ ]
 
 def readFile():
@@ -332,49 +332,34 @@ def printVersion():
 def updateCommand():
 	if checkForUpdates(False):
 		import requests
+		global latestVersion
 
 		# Go to script directory
 		os.chdir(os.path.dirname(SCRIPT_PATH))
 
-		# Prompt user on which platform to get, if they didn't already provide an argument. Defaulting to built.
-		timecardTypePrompt = getArgument(2)
-		if not isCommandOrAlias(timecardTypePrompt, 'PY') and not isCommandOrAlias(timecardTypePrompt, 'BUILT'):
-			print('Timecard comes in two different platforms - the raw Python script, or a built executable.')
-			print('Usually you want to use the raw Python script, but if you don\'t have Python 3.x installed, the built version is usually what you want.')
-			print('If you are uncertain, just go with `built`.')
-			timecardTypePrompt = input('Which platform of Timecard do you want? (py/built/CANCEL): ').upper()
-		if isCommandOrAlias(timecardTypePrompt, 'PY'):
-			timecardType = '.py'
-		elif isCommandOrAlias(timecardTypePrompt, 'BUILT'):
-			timecardType = '.exe' if system() == 'Windows' else ''
-		else:
-			print('Canceling update.')
-			return
-
 		# Download new version and write to a .new file
-		print('Downloading timecard'+timecardType+'...')
-		newTimecardName = 'timecard'+timecardType
-		updateRequest = requests.get('https://github.com/'+GITHUB_REPO+'/releases/download/v'+str(latestVersion)+'/'+newTimecardName)
+		print('Downloading timecard.py...')
+		updateRequest = requests.get('https://github.com/'+GITHUB_REPO+'/releases/download/v'+str(latestVersion)+'/timecard.py')
 		updateRequest.raise_for_status()
-		open(newTimecardName+'.new', 'wb').write(updateRequest.content)
+		open('timecard.py.new', 'wb').write(updateRequest.content)
 
 		# Replace current file with new file
 		print('Updating timecard to v'+str(latestVersion)+'...')
 		origName = __file__
-		os.rename(__file__, 'timecard.old')
-		os.rename(newTimecardName+'.new', origName)
+		os.rename(__file__, 'timecard.py.old')
+		os.rename('timecard.py.new', origName)
 
 		try:
 			# Set timecard to rwx by user
 			os.chmod(origName, stat.S_IRWXU)
 		except Exception:
-			print('Could not mark updated file as executable! Use `chmod u+x '+os.path.realpath('timecard'+timecardType)+'` to mark as executable')
+			print('WARNING: Could not mark updated file as executable! Use `chmod u+x '+os.path.realpath('timecard.py')+'` to mark as executable')
 
 		# Notify the user and delete this file
 		print()
 		print('Timecard has been updated!')
 		print()
-		os.remove('timecard.old')
+		os.remove('timecard.py.old')
 	else:
 		print('No updates available')
 
@@ -446,8 +431,11 @@ elif getArgument() == 'I3STATUS':
 		else:
 			print('IN: ' + str(getNearestQuarterHour(time.gmtime(getTotalTimeWorked()))))
 elif not os.path.exists(TIMECARD_FILE):
-    # Timecard doesn't exist for today yet, prompt user
-	prompt = input('Clock in for the day? (Y/n): ').strip().lower()
+    # Timecard doesn't exist for today yet, prompt user if they want to clock in first, if they aren't doing so already
+	if not isCommandOrAlias(getArgument(), 'IN') and not isCommandOrAlias(getArgument(), 'OUT'):
+		prompt = input('Clock in for the day? (Y/n): ').strip().lower()
+	else:
+		prompt = 'y'
 
 	# Set prompt to first char, if there are any
 	if len(prompt) > 0:

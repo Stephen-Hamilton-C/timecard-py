@@ -24,6 +24,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "timecard.py,dist/*"
+          artifacts: "timecard.py"
           bodyFile: "RELEASE.md"
           token: ${{ secrets.GITHUB_TOKEN }}

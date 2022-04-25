@@ -6,10 +6,20 @@ timecard uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # Versions <!-- omit in toc -->
 
+- [1.1.2 - 2022-04-25](#112---2022-04-25)
 - [1.1.1 - 2022-03-28](#111---2022-03-28)
 - [1.1.0 - 2022-03-10](#110---2022-03-10)
 - [1.0.1 - 2022-02-28](#101---2022-02-28)
 - [1.0.0 - 2022-02-26](#100---2022-02-26)
+
+# 1.1.2 - 2022-04-25
+
+## Fixed <!-- omit in toc -->
+- "Clock in for the day?" prompt showing when explicitly running `timecard in` for the first time.
+- Updater not finding the Linux binary for the built version of timecard.
+
+## Removed <!-- omit in toc -->
+- Built versions of timecard. Only the python script is available now.
 
 # 1.1.1 - 2022-03-28
 
