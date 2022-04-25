@@ -446,8 +446,11 @@ elif getArgument() == 'I3STATUS':
 		else:
 			print('IN: ' + str(getNearestQuarterHour(time.gmtime(getTotalTimeWorked()))))
 elif not os.path.exists(TIMECARD_FILE):
-    # Timecard doesn't exist for today yet, prompt user
-	prompt = input('Clock in for the day? (Y/n): ').strip().lower()
+    # Timecard doesn't exist for today yet, prompt user if they want to clock in first, if they aren't doing so already
+	if not isCommandOrAlias(getArgument(), 'IN') and not isCommandOrAlias(getArgument(), 'OUT'):
+		prompt = input('Clock in for the day? (Y/n): ').strip().lower()
+	else:
+		prompt = 'y'
 
 	# Set prompt to first char, if there are any
 	if len(prompt) > 0:
