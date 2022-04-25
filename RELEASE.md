@@ -1,5 +1,9 @@
 ## Fixed <!-- omit in toc -->
-- Clocking in/out with negative minute offset logging as time in the future.
+- "Clock in for the day?" prompt showing when explicitly running `timecard in` for the first time.
+- Updater not finding the Linux binary for the built version of timecard.
+
+## Removed <!-- omit in toc -->
+- Built versions of timecard. Only the python script is available now.
 
 # Installation Instructions
 See the [README](https://github.com/Stephen-Hamilton-C/timecard/blob/main/README.md) for specific instructions.
