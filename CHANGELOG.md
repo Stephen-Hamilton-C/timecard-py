@@ -1,16 +1,25 @@
 # Changelog <!-- omit in toc -->
-All notable changes to timecard will be documented in this file.
+All notable changes to timecard-py will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-timecard uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+timecard-py uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # Versions <!-- omit in toc -->
 
+- [1.1.3 - 2022-05-09](#113---2022-05-09)
 - [1.1.2 - 2022-04-25](#112---2022-04-25)
 - [1.1.1 - 2022-03-28](#111---2022-03-28)
 - [1.1.0 - 2022-03-10](#110---2022-03-10)
 - [1.0.1 - 2022-02-28](#101---2022-02-28)
 - [1.0.0 - 2022-02-26](#100---2022-02-26)
+
+# 1.1.3 - 2022-05-09
+
+## Changed <!-- omit in toc -->
+- Repo name from timecard to timecard-py
+
+## Fixed <!-- omit in toc -->
+- Incorrect help message for update command
 
 # 1.1.2 - 2022-04-25
 

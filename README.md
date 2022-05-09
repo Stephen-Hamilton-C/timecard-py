@@ -1,4 +1,4 @@
-# Timecard <!-- omit in toc -->
+# Timecard-py <!-- omit in toc -->
 A simple timecard command line python script. Written by a developer, for developers. It can be configured to automatically run when you open a terminal, making this ideal for our terminal-heavy workspace. Making sure you never forget to clock in.
 
 # Table of Contents <!-- omit in toc -->
@@ -7,7 +7,7 @@ A simple timecard command line python script. Written by a developer, for develo
 - [Command Usage](#command-usage)
 - [Installing](#installing)
   - [Download](#download)
-  - [Requirements for Python Script](#requirements-for-python-script)
+  - [Requirements](#requirements)
   - [Automatic Install](#automatic-install)
   - [Manual Install - Linux](#manual-install---linux)
 - [Uninstalling](#uninstalling)
@@ -52,10 +52,9 @@ A simple timecard command line python script. Written by a developer, for develo
 ## Download
 
 There are two different types of Timecards - the raw .py script, and built binaries. If you have Python 3.x installed, use the raw .py script. If you do not have Python 3.x for any reason, go with the built binaries as they do not require Python to be installed.  
-You can download Timecard in the [releases](https://github.com/Stephen-Hamilton-C/timecard/releases/latest) section.
+You can download Timecard in the [releases](https://github.com/Stephen-Hamilton-C/timecard-py/releases/latest) section.
 
-## Requirements for Python Script
-*these requirements can be ignored if you are using a built version of timecard (ends in .exe or .bin)*
+## Requirements
 - Python 3 or later
 - (optional) requests installed via pip3. Used for automatic updates.
 
@@ -107,4 +106,4 @@ The timecard.json files are stored in UNIX Epoch seconds. Their structure is as 
 If the user has not clocked out yet, the last endTime is always 0.
 
 # License
-Timecard is licensed under the GNU General Public License v3.0. You can find the license details in the [LICENSE](https://github.com/Stephen-Hamilton-C/timecard/blob/main/LICENSE) file in the main branch. Feel free to repurpose, redistribute, and branch off this code anytime. Just keep your modifications open source and licensed the same way :D
+Timecard-py is licensed under the GNU General Public License v3.0. You can find the license details in the [LICENSE](https://github.com/Stephen-Hamilton-C/timecard-py/blob/main/LICENSE) file in the main branch. Feel free to repurpose, redistribute, and branch off this code anytime. Just keep your modifications open source and licensed the same way :D

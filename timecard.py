@@ -2,13 +2,13 @@
 
 ###########################################################################################
 # Stephen-Hamilton-C - Licensed under the GNU GPL v3 License.
-# Source code can be found at https://github.com/Stephen-Hamilton-C/timecard
+# Source code can be found at https://github.com/Stephen-Hamilton-C/timecard-py
 # Run `python3 timecard install` to automagically install this script into your system.
 # Also install requests with `sudo pip3 install requests` for automatic update checking.
 
 # If you fork this project, change the below constant to `<username>/<repo>`.
 # If you don't, update checking and getting will come from my repo.
-GITHUB_REPO = 'Stephen-Hamilton-C/timecard'
+GITHUB_REPO = 'Stephen-Hamilton-C/timecard-py'
 ###########################################################################################
 
 import sys, os, stat, json, time
@@ -28,7 +28,7 @@ class Version:
 		return str(self.major)+'.'+str(self.minor)+'.'+str(self.patch)
 
 # Setup constants
-VERSION = Version('1.1.2')
+VERSION = Version('1.1.3')
 SCRIPT_PATH = os.path.realpath(__file__)
 EXPECTED_WORK_HOURS: int = 8 * 60 * 60
 TIMECARD_FILE: str = 'timecard.' + str(date.today()) + '.json'
@@ -403,7 +403,7 @@ def printUsage():
 	print('	OUT (O) [offset] - Clocks out if you aren\'t already. If an offset is supplied, it logs you as clocked out OFFSET minutes ago or at OFFSET time. Time must be formatted in 24-hour time. (e.g. 17:31)')
 	print('	CLOCK (C) [offset] - Automatically determines whether to clock in/out. See IN and OUT commands.')
 	print('	UNDO (U) - Undos the last clock in/out action')
-	print('	Update [py|built] - Updates timecard to latest version if one is available. The argument can be used to bypass platform prompt.')
+	print('	Update - Updates timecard to latest version if one is available.')
 	print('	Version (V) - Prints the current version of timecard.')
 	print('	Help | ? - Prints this help message.')
 	print()
