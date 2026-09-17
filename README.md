@@ -1,3 +1,7 @@
+# Archived - 2026-09-17
+All repositories have been transferred to a personally-run repository.
+This remains up for legacy purposes.
+
 # Timecard-py <!-- omit in toc -->
 A simple timecard command line python script. Written by a developer, for developers. It can be configured to automatically run when you open a terminal, making this ideal for our terminal-heavy workspace. Making sure you never forget to clock in.
 
